@@ -1,0 +1,1226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Your Health Plan</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --sage: #7A9E7E; --sage-light: #E8F0E9; --sage-dark: #3D5C41;
+    --warm: #C97B4B; --warm-light: #F5EDE4; --warm-dark: #7A3F1E;
+    --cream: #FAF7F2; --ink: #1A1814; --ink-mid: #4A4640; --ink-soft: #8A857E;
+    --white: #FFFFFF; --border: rgba(26,24,20,0.1); --border-med: rgba(26,24,20,0.18);
+    --amber: #D4A843; --amber-light: #FBF3DF; --red-light: #FAEAE8; --red: #C0533A;
+    --blue: #4A7FA5; --blue-light: #E8F2FA;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'DM Sans', sans-serif; background: var(--cream); color: var(--ink); min-height: 100vh; font-size: 16px; line-height: 1.6; -webkit-font-smoothing: antialiased; }
+  nav { position: fixed; bottom: 0; left: 0; right: 0; background: var(--white); border-top: 1px solid var(--border); display: flex; z-index: 100; padding-bottom: env(safe-area-inset-bottom); }
+  .nav-btn { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 10px 4px 8px; background: none; border: none; cursor: pointer; color: var(--ink-soft); font-family: 'DM Sans', sans-serif; font-size: 11px; font-weight: 400; transition: color 0.2s; -webkit-tap-highlight-color: transparent; }
+  .nav-btn.active { color: var(--sage-dark); font-weight: 500; }
+  .nav-btn svg { width: 22px; height: 22px; stroke-width: 1.6; stroke: currentColor; fill: none; }
+  .page { display: none; padding: 0 0 80px; min-height: 100vh; }
+  .page.active { display: block; }
+  .page-header { background: var(--white); border-bottom: 1px solid var(--border); padding: 20px 20px 18px; position: sticky; top: 0; z-index: 50; }
+  .page-header h1 { font-family: 'DM Serif Display', serif; font-size: 26px; font-weight: 400; color: var(--ink); line-height: 1.2; }
+  .page-header p { font-size: 13px; color: var(--ink-soft); margin-top: 3px; }
+  .card { background: var(--white); border: 1px solid var(--border); border-radius: 16px; padding: 20px; margin: 0 16px 14px; }
+  .card-title { font-family: 'DM Serif Display', serif; font-size: 18px; font-weight: 400; color: var(--ink); margin-bottom: 4px; }
+  .section-label { font-size: 11px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.1em; color: var(--ink-soft); padding: 20px 20px 8px; }
+  .goal-item { display: flex; align-items: flex-start; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--border); }
+  .goal-item:last-child { border-bottom: none; padding-bottom: 0; }
+  .goal-item:first-child { padding-top: 0; }
+  .goal-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; margin-top: 6px; }
+  .goal-text { font-size: 15px; line-height: 1.5; }
+  .goal-text strong { font-weight: 500; }
+  .goal-text em { font-style: normal; color: var(--ink-soft); font-size: 13px; display: block; margin-top: 2px; }
+  .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .stat-box { background: var(--cream); border-radius: 12px; padding: 14px; }
+  .stat-label { font-size: 11px; color: var(--ink-soft); font-weight: 500; text-transform: uppercase; letter-spacing: 0.06em; }
+  .stat-val { font-family: 'DM Serif Display', serif; font-size: 24px; color: var(--ink); line-height: 1.1; margin: 2px 0; }
+  .stat-unit { font-size: 12px; color: var(--ink-soft); }
+  .alert { border-radius: 12px; padding: 14px 16px; margin: 0 16px 14px; display: flex; align-items: flex-start; gap: 10px; font-size: 14px; line-height: 1.5; }
+  .alert-amber { background: var(--amber-light); color: var(--warm-dark); border: 1px solid #E8D08A; }
+  .alert-sage { background: var(--sage-light); color: var(--sage-dark); border: 1px solid #B0CDB3; }
+  .alert-icon { font-size: 18px; flex-shrink: 0; margin-top: 1px; }
+  .explain-item { background: var(--white); border: 1px solid var(--border); border-radius: 14px; margin: 0 16px 10px; overflow: hidden; }
+  .explain-btn { width: 100%; background: none; border: none; padding: 18px; display: flex; align-items: center; gap: 14px; cursor: pointer; text-align: left; -webkit-tap-highlight-color: transparent; }
+  .explain-icon { width: 38px; height: 38px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
+  .explain-btn-text { flex: 1; }
+  .explain-btn-title { font-size: 15px; font-weight: 500; color: var(--ink); line-height: 1.3; }
+  .explain-btn-sub { font-size: 12px; color: var(--ink-soft); margin-top: 2px; }
+  .explain-chevron { width: 18px; height: 18px; stroke: var(--ink-soft); fill: none; stroke-width: 2; transition: transform 0.25s; flex-shrink: 0; }
+  .explain-item.open .explain-chevron { transform: rotate(180deg); }
+  .explain-body { display: none; padding: 0 18px 18px; border-top: 1px solid var(--border); }
+  .explain-item.open .explain-body { display: block; }
+  .explain-body p { font-size: 14px; line-height: 1.65; color: var(--ink-mid); margin-top: 14px; }
+  .explain-body ul { margin: 10px 0 0 0; padding-left: 18px; }
+  .explain-body li { font-size: 14px; color: var(--ink-mid); line-height: 1.6; margin-bottom: 6px; }
+  .tip-box { background: var(--sage-light); border-radius: 10px; padding: 12px 14px; margin-top: 12px; font-size: 13px; color: var(--sage-dark); line-height: 1.55; }
+  .tip-box strong { font-weight: 500; display: block; margin-bottom: 2px; }
+  .week-header { padding: 14px 20px 4px; }
+  .week-badge { display: inline-block; background: var(--sage-dark); color: white; font-size: 11px; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; padding: 4px 12px; border-radius: 20px; margin-bottom: 4px; }
+  .week-phase { font-family: 'DM Serif Display', serif; font-size: 20px; color: var(--ink); }
+  .week-desc { font-size: 13px; color: var(--ink-soft); margin-top: 2px; padding: 0 20px 10px; line-height: 1.5; }
+  .day-card { background: var(--white); border: 1px solid var(--border); border-radius: 14px; margin: 0 16px 8px; overflow: hidden; }
+  .day-header { padding: 13px 14px; display: flex; align-items: center; gap: 10px; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+  .day-pill { font-size: 11px; font-weight: 500; padding: 3px 9px; border-radius: 20px; text-transform: uppercase; letter-spacing: 0.06em; flex-shrink: 0; }
+  .pill-gym { background: var(--sage-light); color: var(--sage-dark); }
+  .pill-rest { background: var(--warm-light); color: var(--warm-dark); }
+  .day-name { font-size: 12px; font-weight: 500; color: var(--ink-soft); flex-shrink: 0; min-width: 30px; }
+  .day-title { font-size: 14px; font-weight: 500; flex: 1; }
+  .day-meta { font-size: 12px; color: var(--ink-soft); flex-shrink: 0; }
+  .day-chev { width: 16px; height: 16px; stroke: var(--ink-soft); fill: none; stroke-width: 2; flex-shrink: 0; transition: transform 0.2s; }
+  .day-card.open .day-chev { transform: rotate(180deg); }
+  .day-body { display: none; border-top: 1px solid var(--border); padding: 14px 14px; }
+  .day-card.open .day-body { display: block; }
+  .exercise-row { display: flex; align-items: flex-start; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--border); }
+  .exercise-row:last-child { border-bottom: none; padding-bottom: 0; }
+  .exercise-row:first-child { padding-top: 0; }
+  .ex-num { width: 22px; height: 22px; background: var(--sage-light); color: var(--sage-dark); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 500; flex-shrink: 0; margin-top: 2px; }
+  .ex-info { flex: 1; }
+  .ex-name { font-size: 14px; font-weight: 500; color: var(--ink); }
+  .ex-note { font-size: 12px; color: var(--ink-soft); margin-top: 2px; line-height: 1.4; }
+  .ex-sets { font-size: 12px; font-weight: 500; color: var(--sage-dark); background: var(--sage-light); padding: 3px 8px; border-radius: 20px; white-space: nowrap; flex-shrink: 0; }
+  .rest-activity { display: flex; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--border); }
+  .rest-activity:last-child { border-bottom: none; }
+  .rest-activity:first-child { padding-top: 0; }
+  .rest-icon { width: 34px; height: 34px; border-radius: 10px; background: var(--warm-light); display: flex; align-items: center; justify-content: center; font-size: 17px; flex-shrink: 0; }
+  .rest-text { font-size: 13px; line-height: 1.5; }
+  .rest-text strong { font-weight: 500; display: block; font-size: 14px; }
+  .rest-text span { color: var(--ink-soft); }
+  .week-tabs { display: flex; gap: 6px; padding: 14px 16px 0; overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
+  .week-tabs::-webkit-scrollbar { display: none; }
+  .week-tab { flex-shrink: 0; padding: 7px 14px; border-radius: 20px; font-size: 13px; font-weight: 500; background: var(--white); border: 1px solid var(--border-med); color: var(--ink-mid); cursor: pointer; transition: all 0.15s; -webkit-tap-highlight-color: transparent; }
+  .week-tab.active { background: var(--sage-dark); color: white; border-color: var(--sage-dark); }
+  .week-content { display: none; }
+  .week-content.active { display: block; }
+  .home-week-tab { flex-shrink: 0; padding: 7px 14px; border-radius: 20px; font-size: 13px; font-weight: 500; background: var(--white); border: 1px solid var(--border-med); color: var(--ink-mid); cursor: pointer; transition: all 0.15s; -webkit-tap-highlight-color: transparent; }
+  .home-week-tab.active { background: var(--warm-dark); color: white; border-color: var(--warm-dark); }
+  .home-week-content { display: none; }
+  .home-week-content.active { display: block; }
+  .progress-note { background: var(--white); border: 1px solid var(--border); border-radius: 14px; margin: 0 16px 12px; padding: 14px; display: flex; gap: 12px; align-items: flex-start; font-size: 14px; line-height: 1.55; color: var(--ink-mid); }
+  .hero { background: var(--sage-dark); padding: 28px 20px 24px; color: white; }
+  .hero-greeting { font-size: 13px; opacity: 0.7; letter-spacing: 0.05em; text-transform: uppercase; font-weight: 500; }
+  .hero-name { font-family: 'DM Serif Display', serif; font-size: 32px; font-weight: 400; line-height: 1.15; margin: 4px 0 8px; }
+  .hero-sub { font-size: 14px; opacity: 0.75; line-height: 1.5; max-width: 280px; }
+  .hero-stats { display: flex; gap: 8px; margin-top: 20px; }
+  .hero-stat { background: rgba(255,255,255,0.15); border-radius: 12px; padding: 12px 14px; flex: 1; }
+  .hero-stat-val { font-family: 'DM Serif Display', serif; font-size: 22px; }
+  .hero-stat-label { font-size: 11px; opacity: 0.7; margin-top: 1px; }
+  .top-spacer { height: 16px; }
+  .c-sage { background: var(--sage); } .c-warm { background: var(--warm); } .c-red { background: var(--red); } .c-blue { background: var(--blue); }
+  .ic-sage { background: var(--sage-light); } .ic-warm { background: var(--warm-light); } .ic-amber { background: var(--amber-light); } .ic-blue { background: var(--blue-light); } .ic-red { background: var(--red-light); }
+  .important-note { background: var(--amber-light); border: 1px solid #E8D08A; border-radius: 12px; padding: 14px 16px; margin: 0 16px 12px; font-size: 13px; color: var(--warm-dark); line-height: 1.55; }
+  .important-note strong { display: block; font-size: 14px; margin-bottom: 4px; }
+  .warm-note { font-size: 13px; padding: 8px 10px; background: var(--sage-light); border-radius: 8px; color: var(--sage-dark); margin-top: 10px; }
+  .info-note { font-size: 13px; padding: 8px 10px; background: var(--cream); border-radius: 8px; color: var(--ink-soft); margin-bottom: 10px; }
+  .day-section-label { font-size: 11px; font-weight: 500; color: var(--ink-soft); text-transform: uppercase; letter-spacing: 0.08em; padding: 8px 16px 4px; }
+</style>
+</head>
+<body>
+
+<!-- PAGE: GOALS -->
+<div class="page active" id="page-goals">
+  <div class="hero">
+    <div class="hero-greeting">Your health plan</div>
+    <div class="hero-name">Your Goals &<br>Your Body</div>
+    <div class="hero-sub">A clear picture of where you are, and where you're heading.</div>
+    <div class="hero-stats">
+      <div class="hero-stat"><div class="hero-stat-val">8 wks</div><div class="hero-stat-label">Programme</div></div>
+      <div class="hero-stat"><div class="hero-stat-val">3×</div><div class="hero-stat-label">Per week</div></div>
+      <div class="hero-stat"><div class="hero-stat-val">1,500</div><div class="hero-stat-label">Cal target</div></div>
+    </div>
+  </div>
+  <div class="top-spacer"></div>
+  <div class="alert alert-amber">
+    <div class="alert-icon">⚠️</div>
+    <div><strong>GP note:</strong> The numbness in your toes when walking is worth mentioning to your GP at your next appointment — it may be related to the ankle. Not urgent, but worth checking.</div>
+  </div>
+  <div class="section-label">Your numbers right now</div>
+  <div class="card">
+    <div class="stat-grid">
+      <div class="stat-box"><div class="stat-label">Your BMR</div><div class="stat-val">~1,350</div><div class="stat-unit">cals burned at rest</div></div>
+      <div class="stat-box"><div class="stat-label">Current intake</div><div class="stat-val">1,200</div><div class="stat-unit">below BMR ↓</div></div>
+      <div class="stat-box"><div class="stat-label">New target</div><div class="stat-val">1,400–1,500</div><div class="stat-unit">calories/day</div></div>
+      <div class="stat-box"><div class="stat-label">Protein goal</div><div class="stat-val">90–100g</div><div class="stat-unit">per day</div></div>
+    </div>
+  </div>
+  <div class="section-label">What we're working towards</div>
+  <div class="card">
+    <div class="goal-item"><div class="goal-dot c-sage"></div><div class="goal-text"><strong>Build muscle to support your joints</strong><em>More muscle means your body burns more at rest, and your knees and ankles are better supported when you move</em></div></div>
+    <div class="goal-item"><div class="goal-dot c-sage"></div><div class="goal-text"><strong>Eat more — but smarter</strong><em>Raising calories to 1,400–1,500 with high protein helps your body stop holding on to fat and start building muscle</em></div></div>
+    <div class="goal-item"><div class="goal-dot c-warm"></div><div class="goal-text"><strong>Stop letting the scales run your mood</strong><em>Daily weight swings of several pounds are completely normal — they tell us almost nothing useful. We're measuring progress differently</em></div></div>
+    <div class="goal-item"><div class="goal-dot c-warm"></div><div class="goal-text"><strong>Move in ways that don't hurt you</strong><em>The right exercise for your body protects your ankle, wrists and fingers — not the kind that puts pressure on them</em></div></div>
+    <div class="goal-item"><div class="goal-dot c-blue"></div><div class="goal-text"><strong>Feel stronger and more capable</strong><em>By week 8, everyday tasks — stairs, carrying bags, getting up — should feel noticeably easier. That's the real win</em></div></div>
+  </div>
+  <div class="section-label">How to track progress (not the scales)</div>
+  <div class="card">
+    <div class="goal-item"><div class="goal-dot c-sage"></div><div class="goal-text"><strong>Weekly tape measurements</strong><em>Waist, hips, upper arms once a week — these show real fat loss when the scale doesn't move</em></div></div>
+    <div class="goal-item"><div class="goal-dot c-sage"></div><div class="goal-text"><strong>Monthly photos</strong><em>Same outfit, same lighting, same position — you'll be surprised what you see after 8 weeks</em></div></div>
+    <div class="goal-item"><div class="goal-dot c-warm"></div><div class="goal-text"><strong>How your clothes fit</strong><em>Jeans that felt tight becoming comfortable is more meaningful than any number on a scale</em></div></div>
+    <div class="goal-item"><div class="goal-dot c-blue"></div><div class="goal-text"><strong>What you can lift</strong><em>Watch your weights grow week on week — this is the most motivating and accurate progress measure</em></div></div>
+  </div>
+  <div class="top-spacer"></div>
+</div>
+
+<!-- PAGE: UNDERSTAND -->
+<div class="page" id="page-understand">
+  <div class="page-header">
+    <h1>Understand</h1>
+    <p>What's happening in your body, explained simply</p>
+  </div>
+  <div class="top-spacer"></div>
+
+  <div class="explain-item" onclick="toggleExplain(this)">
+    <div class="explain-btn"><div class="explain-icon ic-amber">🔄</div><div class="explain-btn-text"><div class="explain-btn-title">Why the scales stopped moving</div><div class="explain-btn-sub">Metabolic adaptation explained</div></div><svg class="explain-chevron" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg></div>
+    <div class="explain-body">
+      <p>Your body is extraordinarily clever. When you eat 1,200 calories for a long time, it gradually adjusts to function on that amount — slowing digestion, reducing body temperature regulation, and burning fewer calories at rest — until the deficit you created essentially disappears.</p>
+      <p>This isn't failure. This is your body doing exactly what it evolved to do: survive. But it means the approach that worked at 50 no longer works at 66, especially after the activity drop following your ankle fracture.</p>
+      <p>This is why eating slightly <em>more</em> — not less — is the first step. Raising your calories to 1,400–1,500 with protein as the priority signals to your body that it's safe, and begins lifting your metabolic rate again.</p>
+      <div class="tip-box"><strong>The short version:</strong> Eating too little for too long trains your body to need less. The fix is to eat slightly more of the right things — especially protein — while adding strength exercise.</div>
+    </div>
+  </div>
+
+  <div class="explain-item" onclick="toggleExplain(this)">
+    <div class="explain-btn"><div class="explain-icon ic-red">💧</div><div class="explain-btn-text"><div class="explain-btn-title">Why the scales swing so wildly</div><div class="explain-btn-sub">Water weight and fibromyalgia</div></div><svg class="explain-chevron" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg></div>
+    <div class="explain-body">
+      <p>Normal daily weight fluctuation for anyone is 1–5 lbs — caused by food and water in your system, sweat, hydration levels, and the time of day you weigh yourself.</p>
+      <p>For you, this is amplified by fibromyalgia. Chronic pain keeps a hormone called cortisol elevated in your blood. Cortisol tells your kidneys to hold on to water and sodium — meaning you can retain noticeably more fluid than someone without chronic pain.</p>
+      <p>You could eat perfectly, sleep well, exercise well, and still see the scale go up 4–7 lbs overnight and back down the next day. This is not fat gain. It is your body's stress response doing its job.</p>
+      <div class="tip-box"><strong>The short version:</strong> Daily scale swings are mostly water — and fibromyalgia makes yours bigger than average. They tell you almost nothing about fat or muscle. Monthly measurements are enough.</div>
+    </div>
+  </div>
+
+  <div class="explain-item" onclick="toggleExplain(this)">
+    <div class="explain-btn"><div class="explain-icon ic-sage">💪</div><div class="explain-btn-text"><div class="explain-btn-title">Why building muscle is the key</div><div class="explain-btn-sub">Sarcopenia and your metabolism</div></div><svg class="explain-chevron" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg></div>
+    <div class="explain-body">
+      <p>After 60, the body naturally loses muscle faster than it builds it — this is called sarcopenia. Muscle is "expensive" to maintain: every pound burns roughly 3× more calories at rest than fat does. As muscle is lost, your resting metabolism drops further.</p>
+      <p>The most effective way to reverse this is resistance exercise. Your body responds by rebuilding muscle fibres, which raises your metabolism, improves how your body handles blood sugar, and — critically for you — provides stronger support for your joints, reducing pain over time.</p>
+      <p><strong>Important:</strong> When you start resistance training, the scale may go up slightly in the first 2–3 weeks. Muscle stores glycogen (energy) and water. This is a good sign. Keep going.</p>
+      <div class="tip-box"><strong>The short version:</strong> More muscle = higher metabolism at rest + better joint support + less pain. The early scale increase is muscle and water, not fat.</div>
+    </div>
+  </div>
+
+  <div class="explain-item" onclick="toggleExplain(this)">
+    <div class="explain-btn"><div class="explain-icon ic-warm">🍳</div><div class="explain-btn-text"><div class="explain-btn-title">Why protein matters so much now</div><div class="explain-btn-sub">Fuelling muscle at 66</div></div><svg class="explain-chevron" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg></div>
+    <div class="explain-body">
+      <p>Protein is the raw material your body uses to build and repair muscle. Without enough of it, your body breaks down existing muscle tissue for energy — making sarcopenia worse.</p>
+      <p>90–100g of protein per day sounds like a lot, but it's achievable across three meals. It's also another reason 1,200 calories isn't enough — hitting 90g of protein on 1,200 calories while eating anything else is nearly impossible.</p>
+      <ul>
+        <li>2 eggs + 100g Greek yoghurt at breakfast = ~25g</li>
+        <li>150g chicken or tinned fish at lunch = ~35g</li>
+        <li>100g cottage cheese + protein at dinner = ~30g</li>
+      </ul>
+      <div class="tip-box"><strong>Easy protein sources for your situation:</strong> Greek yoghurt, eggs, cottage cheese, tinned salmon or tuna, chicken breast, lentils, edamame — soft and easy to prepare, no hard gripping required.</div>
+    </div>
+  </div>
+
+  <div class="explain-item" onclick="toggleExplain(this)">
+    <div class="explain-btn"><div class="explain-icon ic-blue">🦴</div><div class="explain-btn-text"><div class="explain-btn-title">Exercising with osteoarthritis</div><div class="explain-btn-sub">What helps and what to avoid</div></div><svg class="explain-chevron" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg></div>
+    <div class="explain-body">
+      <p>Osteoarthritis is where the cartilage cushioning your joints wears down. You have it in your fingers, wrists, and ankles. The common fear is that exercise makes it worse — but the evidence consistently shows the opposite. Appropriate exercise reduces OA pain over time by strengthening the muscles that support affected joints.</p>
+      <p>The key is the type of exercise:</p>
+      <ul>
+        <li><strong>Avoid:</strong> High-impact exercise, heavy barbells gripped with both hands, exercises that load the ankle in a restricted position</li>
+        <li><strong>Good:</strong> Machine-based exercises, leg press instead of squats, chest press instead of push-ups, seated cable rows, swimming</li>
+        <li><strong>For wrists:</strong> Use wrist wraps or padding where needed. Machines are far gentler than free weights</li>
+      </ul>
+      <div class="tip-box"><strong>The short version:</strong> Movement is medicine for OA. The right exercise reduces pain — but it needs to be low-impact and machine-based for your joints.</div>
+    </div>
+  </div>
+
+  <div class="explain-item" onclick="toggleExplain(this)">
+    <div class="explain-btn"><div class="explain-icon ic-amber">🌊</div><div class="explain-btn-text"><div class="explain-btn-title">Exercising with fibromyalgia</div><div class="explain-btn-sub">Pacing and the 24-hour rule</div></div><svg class="explain-chevron" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg></div>
+    <div class="explain-body">
+      <p>Fibromyalgia can cause a "flare" in pain or fatigue in the 24–48 hours after exercise — called post-exertion malaise. This is not a reason to avoid exercise, but it is a reason to start gently and increase slowly.</p>
+      <p>The key principle is pacing: start at an intensity that feels almost too easy. If you feel fine the next morning, you got the level right. If you're significantly worse, the session was too intense — not because you're weak, but because your nervous system processes effort differently with fibromyalgia.</p>
+      <div class="tip-box"><strong>The 24-hour check:</strong> After every gym session, note how you feel the next morning. Fine = right level. Significantly worse = scale back slightly. Never push through a fibromyalgia flare.</div>
+    </div>
+  </div>
+
+  <div class="explain-item" onclick="toggleExplain(this)">
+    <div class="explain-btn"><div class="explain-icon ic-blue">🏊</div><div class="explain-btn-text"><div class="explain-btn-title">Why water exercise beats walking</div><div class="explain-btn-sub">The best cardio for your body</div></div><svg class="explain-chevron" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg></div>
+    <div class="explain-body">
+      <p>Walking is good — but for your specific situation, it isn't the best primary cardio. Your ankle is still problematic, you have OA in the ankle joint, and the toe numbness means prolonged walking can become uncomfortable quickly.</p>
+      <p>Pool walking and aqua aerobics give the same cardiovascular benefits with almost zero joint impact. Water provides about 12× more resistance than air, so you're working harder with far less stress on your feet and ankles. The warm water also actively reduces fibromyalgia pain signals while you're in it.</p>
+      <ul>
+        <li><strong>Best:</strong> Pool walking, aqua aerobics, gentle swimming</li>
+        <li><strong>Good:</strong> Seated pedal exerciser at home, stationary bike at gym</li>
+        <li><strong>Use cautiously:</strong> Walking — short distances (15–20 min) on flat ground are fine</li>
+        <li><strong>Avoid:</strong> Running, aerobics classes, anything with jumping</li>
+      </ul>
+      <div class="tip-box"><strong>The short version:</strong> Water is your best friend for cardio. If you can get to a pool even once a week, it's worth it.</div>
+    </div>
+  </div>
+
+  <div class="explain-item" onclick="toggleExplain(this)">
+    <div class="explain-btn"><div class="explain-icon ic-red">🪞</div><div class="explain-btn-text"><div class="explain-btn-title">Body dysmorphia and this process</div><div class="explain-btn-sub">Being kind to yourself as you change</div></div><svg class="explain-chevron" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg></div>
+    <div class="explain-body">
+      <p>Losing 100 lbs in your 50s was a remarkable achievement. But it also means you built your sense of yourself around a number on a scale — and when that number moved, it felt like you changed as a person.</p>
+      <p>The weight that has come back is not proof of failure. In large part, it is your body adapting to reduced activity after the ankle injury, combined with the natural muscle loss that comes with age. It happened to you — it is not something you did.</p>
+      <p>This programme is not about getting back to a number. It is about building a body that works well for you at 66 — that moves with less pain, has energy, and is strong enough for the things you want to do.</p>
+      <div class="tip-box"><strong>A reframe worth trying:</strong> Instead of "did I lose weight this week?" — ask "can I do more than I could last week?" That question always has an answer you can be proud of.</div>
+    </div>
+  </div>
+
+  <div class="top-spacer"></div>
+</div>
+
+<!-- PAGE: PROGRAMME -->
+<div class="page" id="page-programme">
+  <div class="page-header">
+    <h1>8-Week Plan</h1>
+    <p>3 gym days · 4 active recovery days per week</p>
+  </div>
+  <div class="top-spacer"></div>
+
+  <div class="important-note">
+    <strong>⚠️ Before you start</strong>
+    Please check with your GP before beginning, especially regarding your ankle. Stop any exercise that causes sharp or worsening joint pain — mild muscle tiredness is normal, sharp pain is not.
+  </div>
+
+  <div class="progress-note">
+    <div style="font-size:22px;flex-shrink:0">📋</div>
+    <div><strong style="display:block;margin-bottom:3px;font-weight:500">How to use this plan</strong>Gym days are Monday, Wednesday, Friday (or any 3 non-consecutive days). Tap a week phase to switch, then tap any day to expand the full session.</div>
+  </div>
+
+  <div class="week-tabs" id="weekTabs">
+    <button class="week-tab active" onclick="switchWeek(0,this)">Weeks 1–2</button>
+    <button class="week-tab" onclick="switchWeek(1,this)">Weeks 3–4</button>
+    <button class="week-tab" onclick="switchWeek(2,this)">Weeks 5–6</button>
+    <button class="week-tab" onclick="switchWeek(3,this)">Weeks 7–8</button>
+  </div>
+
+  <!-- ===== WEEKS 1–2 ===== -->
+  <div class="week-content active" id="week-0">
+    <div class="week-header"><div class="week-badge">Phase 1 · Weeks 1–2</div><div class="week-phase">Learning to Move</div></div>
+    <div class="week-desc">Very light weights. The goal is learning the movements and testing how your body responds. If you feel fine the next morning, you've got the level right. 2 sets of 12 reps.</div>
+
+    <div class="day-section-label">Monday · Gym</div>
+    <div class="day-card" onclick="toggleDay(this)">
+      <div class="day-header">
+        <span class="day-pill pill-gym">Gym</span>
+        <span class="day-title">Session A — Full Body</span>
+        <span class="day-meta">~40 min</span>
+        <svg class="day-chev" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+      </div>
+      <div class="day-body">
+        <div class="info-note">Start with 5 min on the seated stationary bike at very low resistance — just to warm your joints gently.</div>
+        <div class="exercise-row"><div class="ex-num">1</div><div class="ex-info"><div class="ex-name">Leg Press (Machine)</div><div class="ex-note">Feet shoulder-width, push until nearly straight but don't lock knees. Start with just the machine weight.</div></div><div class="ex-sets">2×12</div></div>
+        <div class="exercise-row"><div class="ex-num">2</div><div class="ex-info"><div class="ex-name">Seated Chest Press (Machine)</div><div class="ex-note">Adjust seat so handles are at chest height. Push forward, return slowly. Wrists stay straight.</div></div><div class="ex-sets">2×12</div></div>
+        <div class="exercise-row"><div class="ex-num">3</div><div class="ex-info"><div class="ex-name">Seated Row (Cable Machine)</div><div class="ex-note">Use the wide grip bar. Pull to mid-chest, squeeze shoulder blades, return slowly. No jerking.</div></div><div class="ex-sets">2×12</div></div>
+        <div class="exercise-row"><div class="ex-num">4</div><div class="ex-info"><div class="ex-name">Leg Curl (Machine)</div><div class="ex-note">Lying or seated. Curl heels toward your body. Works the backs of the thighs. Very light weight.</div></div><div class="ex-sets">2×12</div></div>
+        <div class="exercise-row"><div class="ex-num">5</div><div class="ex-info"><div class="ex-name">Seated Overhead Press (Machine)</div><div class="ex-note">If wrists allow. Press upward, elbows slightly forward. Skip this if wrists are painful today.</div></div><div class="ex-sets">2×12</div></div>
+        <div class="exercise-row"><div class="ex-num">6</div><div class="ex-info"><div class="ex-name">Seated Marching (Core)</div><div class="ex-note">Sit tall on a bench. Lift alternate knees slowly, hands on thighs. 30 seconds continuous.</div></div><div class="ex-sets">2×30s</div></div>
+        <div class="warm-note">Finish with gentle stretches for quads, chest, and upper back — hold each 20 seconds. Leave feeling like you could have done more.</div>
+      </div>
+    </div>
+
+    <div class="day-section-label">Tuesday · Rest</div>
+    <div class="day-card" onclick="toggleDay(this)">
+      <div class="day-header">
+        <span class="day-pill pill-rest">Rest</span>
+        <span class="day-title">Active Recovery</span>
+        <span class="day-meta">Choose one</span>
+        <svg class="day-chev" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+      </div>
+      <div class="day-body">
+        <div class="rest-activity"><div class="rest-icon">🏊</div><div class="rest-text"><strong>Pool walking / aqua aerobics (best)</strong><span>20–30 min gentle pool walking or an aqua class. Near-zero joint impact, warm water reduces fibromyalgia pain.</span></div></div>
+        <div class="rest-activity"><div class="rest-icon">🚴</div><div class="rest-text"><strong>Seated pedal exerciser (home option)</strong><span>20–30 min at easy pace while seated — watching TV is fine. Zero ankle load.</span></div></div>
+        <div class="rest-activity"><div class="rest-icon">🚶</div><div class="rest-text"><strong>Short gentle walk (backup only)</strong><span>15–20 min max, flat surface. Stop if toes go numb or ankle complains.</span></div></div>
+        <div class="rest-activity"><div class="rest-icon">🧘</div><div class="rest-text"><strong>Gentle stretching</strong><span>10 min of seated or lying stretches. Focus on hips, thighs, upper back.</span></div></div>
+      </div>
+    </div>
+
+    <div class="day-section-label">Wednesday · Gym</div>
+    <div class="day-card" onclick="toggleDay(this)">
+      <div class="day-header">
+        <span class="day-pill pill-gym">Gym</span>
+        <span class="day-title">Session A — Full Body (repeat)</span>
+        <span class="day-meta">~40 min</span>
+        <svg class="day-chev" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+      </div>
+      <div class="day-body">
+        <div class="info-note">Same session as Monday. The repetition is intentional — you're building familiarity with the movements. Notice if anything feels easier already.</div>
+        <div class="exercise-row"><div class="ex-num">1</div><div class="ex-info"><div class="ex-name">Leg Press (Machine)</div><div class="ex-note">Same weight as Monday unless that felt very easy — then add the smallest increment available.</div></div><div class="ex-sets">2×12</div></div>
+        <div class="exercise-row"><div class="ex-num">2</div><div class="ex-info"><div class="ex-name">Seated Chest Press (Machine)</div><div class="ex-note">Focus on keeping wrists neutral throughout — not bent back.</div></div><div class="ex-sets">2×12</div></div>
+        <div class="exercise-row"><div class="ex-num">3</div><div class="ex-info"><div class="ex-name">Seated Row (Cable Machine)</div><div class="ex-note">Sit tall throughout. Imagine you're trying to squeeze a pencil between your shoulder blades.</div></div><div class="ex-sets">2×12</div></div>
+        <div class="exercise-row"><div class="ex-num">4</div><div class="ex-info"><div class="ex-name">Leg Curl (Machine)</div><div class="ex-note">Slow and controlled. Count 2 seconds up, 3 seconds down.</div></div><div class="ex-sets">2×12</div></div>
+        <div class="exercise-row"><div class="ex-num">5</div><div class="ex-info"><div class="ex-name">Seated Overhead Press (Machine)</div><div class="ex-note">If wrists allow. Very light. Getting the movement pattern right matters more than weight.</div></div><div class="ex-sets">2×12</div></div>
+        <div class="exercise-row"><div class="ex-num">6</div><div class="ex-info"><div class="ex-name">Seated Marching (Core)</div><div class="ex-note">Sit tall, engage your tummy gently as you march. Slow and deliberate.</div></div><div class="ex-sets">2×30s</div></div>
+        <div class="warm-note">Same cool-down stretches as Monday. Well done — two sessions done.</div>
+      </div>
+    </div>
+
+    <div class="day-section-label">Thursday · Rest</div>
+    <div class="day-card" onclick="toggleDay(this)">
+      <div class="day-header">
+        <span class="day-pill pill-rest">Rest</span>
+        <span class="day-title">Active Recovery</span>
+        <span class="day-meta">Choose one</span>
+        <svg class="day-chev" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+      </div>
+      <div class="day-body">
+        <div class="rest-activity"><div class="rest-icon">🏊</div><div class="rest-text"><strong>Pool walking / aqua aerobics (best)</strong><span>20–30 min. If your pool has an aqua aerobics class, this is a great day for it.</span></div></div>
+        <div class="rest-activity"><div class="rest-icon">🚴</div><div class="rest-text"><strong>Seated pedal exerciser</strong><span>20–30 min easy. Put on a programme you enjoy — it makes the time fly.</span></div></div>
+        <div class="rest-activity"><div class="rest-icon">🧘</div><div class="rest-text"><strong>Rest and stretch</strong><span>Completely fine to just do 10 min of gentle stretching today and nothing more if you're tired.</span></div></div>
+      </div>
+    </div>
+
+    <div class="day-section-label">Friday · Gym</div>
+    <div class="day-card" onclick="toggleDay(this)">
+      <div class="day-header">
+        <span class="day-pill pill-gym">Gym</span>
+        <span class="day-title">Session A — Full Body (repeat)</span>
+        <span class="day-meta">~40 min</span>
+        <svg class="day-chev" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+      </div>
+      <div class="day-body">
+        <div class="info-note">Third session of the week. You should notice the movements feeling more natural. Note how much weight you used today — next phase, you'll be adding to this.</div>
+        <div class="exercise-row"><div class="ex-num">1</div><div class="ex-info"><div class="ex-name">Leg Press (Machine)</div><div class="ex-note">By Friday of week 2, try adding a small amount of weight if the movement has felt comfortable all week.</div></div><div class="ex-sets">2×12</div></div>
+        <div class="exercise-row"><div class="ex-num">2</div><div class="ex-info"><div class="ex-name">Seated Chest Press (Machine)</div><div class="ex-note">Same weight or slightly more if all 12 reps have been feeling easy.</div></div><div class="ex-sets">2×12</div></div>
+        <div class="exercise-row"><div class="ex-num">3</div><div class="ex-info"><div class="ex-name">Seated Row (Cable Machine)</div><div class="ex-note">Really nail the technique this session — it pays off in later phases.</div></div><div class="ex-sets">2×12</div></div>
+        <div class="exercise-row"><div class="ex-num">4</div><div class="ex-info"><div class="ex-name">Leg Curl (Machine)</div><div class="ex-note">Controlled throughout. If this has felt very easy both weeks, try a small weight increase.</div></div><div class="ex-sets">2×12</div></div>
+        <div class="exercise-row"><div class="ex-num">5</div><div class="ex-info"><div class="ex-name">Seated Overhead Press (Machine)</div><div class="ex-note">If wrists allow. Light weight.</div></div><div class="ex-sets">2×12</div></div>
+        <div class="exercise-row"><div class="ex-num">6</div><div class="ex-info"><div class="ex-name">Seated Marching (Core)</div><div class="ex-note">End strong. Sit up straight, breathe steadily, march with control.</div></div><div class="ex-sets">2×30s</div></div>
+        <div class="warm-note">Three sessions done this week — that is a real achievement. Rest well this weekend.</div>
+      </div>
+    </div>
+
+    <div class="day-section-label">Saturday · Rest</div>
+    <div class="day-card" onclick="toggleDay(this)">
+      <div class="day-header">
+        <span class="day-pill pill-rest">Rest</span>
+        <span class="day-title">Weekend Recovery</span>
+        <span class="day-meta">Light activity</span>
+        <svg class="day-chev" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+      </div>
+      <div class="day-body">
+        <div class="rest-activity"><div class="rest-icon">🏊</div><div class="rest-text"><strong>Pool session (ideal)</strong><span>Weekend aqua classes are often available. 30 min is plenty.</span></div></div>
+        <div class="rest-activity"><div class="rest-icon">🚶</div><div class="rest-text"><strong>Gentle walk (if joints allow)</strong><span>A pleasant 15–20 min walk on a flat surface. Enjoyment over effort today.</span></div></div>
+        <div class="rest-activity"><div class="rest-icon">🧘</div><div class="rest-text"><strong>Rest completely</strong><span>Completely valid on a Saturday. You've done 3 gym sessions — your body is rebuilding. Rest is part of the plan.</span></div></div>
+      </div>
+    </div>
+
+    <div class="day-section-label">Sunday · Rest</div>
+    <div class="day-card" onclick="toggleDay(this)">
+      <div class="day-header">
+        <span class="day-pill pill-rest">Rest</span>
+        <span class="day-title">Full Rest Day</span>
+        <span class="day-meta">Recover completely</span>
+        <svg class="day-chev" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+      </div>
+      <div class="day-body">
+        <div class="rest-activity"><div class="rest-icon">☕</div><div class="rest-text"><strong>Rest and prepare for next week</strong><span>Sunday is about recovery. A gentle walk if you feel like it — but there's no obligation. Check in with how your body feels after your first full week.</span></div></div>
+        <div class="rest-activity"><div class="rest-icon">🍳</div><div class="rest-text"><strong>Meal prep suggestion</strong><span>Use some of Sunday to prep protein sources for the week — boiled eggs, tinned fish, portioned Greek yoghurt. It makes hitting 90g of protein much easier.</span></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== WEEKS 3–4 ===== -->
+  <div class="week-content" id="week-1">
+    <div class="week-header"><div class="week-badge">Phase 2 · Weeks 3–4</div><div class="week-phase">Building the Base</div></div>
+    <div class="week-desc">Add a third set and slightly increase weight where you felt comfortable. Still controlled — no rushing. You now alternate between Session A (push/legs) and Session B (pull/core) to vary stimulus.</div>
+
+    <div class="day-section-label">Monday · Gym</div>
+    <div class="day-card" onclick="toggleDay(this)">
+      <div class="day-header">
+        <span class="day-pill pill-gym">Gym</span>
+        <span class="day-title">Session A — Legs & Push</span>
+        <span class="day-meta">~50 min</span>
+        <svg class="day-chev" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+      </div>
+      <div class="day-body">
+        <div class="info-note">5 min warm-up on seated bike. Now 3 sets per exercise — rest 90 seconds between sets.</div>
+        <div class="exercise-row"><div class="ex-num">1</div><div class="ex-info"><div class="ex-name">Leg Press (Machine)</div><div class="ex-note">Add weight from weeks 1–2 if those felt comfortable. Last 2 reps of each set should feel like genuine effort.</div></div><div class="ex-sets">3×12</div></div>
+        <div class="exercise-row"><div class="ex-num">2</div><div class="ex-info"><div class="ex-name">Leg Extension (Machine)</div><div class="ex-note">New exercise. Sit upright, extend slowly, lower with control. Works the front of the thigh (quads).</div></div><div class="ex-sets">3×12</div></div>
+        <div class="exercise-row"><div class="ex-num">3</div><div class="ex-info"><div class="ex-name">Seated Chest Press (Machine)</div><div class="ex-note">Slight weight increase from phase 1. Slow on the return — 3 seconds down.</div></div><div class="ex-sets">3×12</div></div>
+        <div class="exercise-row"><div class="ex-num">4</div><div class="ex-info"><div class="ex-name">Seated Overhead Press (Machine)</div><div class="ex-note">If wrists allow. Slightly more weight than phase 1.</div></div><div class="ex-sets">3×12</div></div>
+        <div class="exercise-row"><div class="ex-num">5</div><div class="ex-info"><div class="ex-name">Seated Knee Raise (Core)</div><div class="ex-note">Sit on bench edge, hands gripping side for support. Lift both knees, lower with control.</div></div><div class="ex-sets">3×10</div></div>
+        <div class="warm-note">3 sets is more volume than before — you may feel more tired. That's normal. Stretch well afterwards.</div>
+      </div>
+    </div>
+
+    <div class="day-section-label">Tuesday · Rest</div>
+    <div class="day-card" onclick="toggleDay(this)">
+      <div class="day-header">
+        <span class="day-pill pill-rest">Rest</span>
+        <span class="day-title">Active Recovery</span>
+        <span class="day-meta">Choose one</span>
+        <svg class="day-chev" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+      </div>
+      <div class="day-body">
+        <div class="rest-activity"><div class="rest-icon">🏊</div><div class="rest-text"><strong>Pool walking / aqua aerobics</strong><span>Try to increase to 30–35 min if comfortable. Still gentle pace.</span></div></div>
+        <div class="rest-activity"><div class="rest-icon">🚴</div><div class="rest-text"><strong>Seated pedal exerciser</strong><span>25–30 min. Slightly more resistance than weeks 1–2 if that felt very easy.</span></div></div>
+        <div class="rest-activity"><div class="rest-icon">🧘</div><div class="rest-text"><strong>Stretch + ankle circles</strong><span>Add gentle seated ankle circles to your routine — helps maintain mobility in the joint.</span></div></div>
+      </div>
+    </div>
+
+    <div class="day-section-label">Wednesday · Gym</div>
+    <div class="day-card" onclick="toggleDay(this)">
+      <div class="day-header">
+        <span class="day-pill pill-gym">Gym</span>
+        <span class="day-title">Session B — Back & Pull</span>
+        <span class="day-meta">~50 min</span>
+        <svg class="day-chev" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+      </div>
+      <div class="day-body">
+        <div class="info-note">5 min warm-up. Session B focuses on pulling movements — back, biceps, and hip stability. Great for posture.</div>
+        <div class="exercise-row"><div class="ex-num">1</div><div class="ex-info"><div class="ex-name">Lat Pulldown (Machine)</div><div class="ex-note">Wide grip, pull bar to upper chest. Lean back slightly. Brilliant for upper back and posture. Wrist-friendly.</div></div><div class="ex-sets">3×12</div></div>
+        <div class="exercise-row"><div class="ex-num">2</div><div class="ex-info"><div class="ex-name">Seated Row (Cable Machine)</div><div class="ex-note">Focus on the squeeze — really hold the contraction for a moment before releasing.</div></div><div class="ex-sets">3×12</div></div>
+        <div class="exercise-row"><div class="ex-num">3</div><div class="ex-info"><div class="ex-name">Leg Curl (Machine)</div><div class="ex-note">Works the backs of the thighs (hamstrings). Count 2 seconds up, 3 seconds down.</div></div><div class="ex-sets">3×12</div></div>
+        <div class="exercise-row"><div class="ex-num">4</div><div class="ex-info"><div class="ex-name">Hip Abductor (Machine)</div><div class="ex-note">Sit in machine, push legs apart against resistance. Brilliant for hip stability — helps support your ankle.</div></div><div class="ex-sets">3×12</div></div>
+        <div class="exercise-row"><div class="ex-num">5</div><div class="ex-info"><div class="ex-name">Seated Marching (Core)</div><div class="ex-note">As before — sit tall, slow deliberate alternating knee raises.</div></div><div class="ex-sets">3×30s</div></div>
+        <div class="warm-note">Session B uses different muscles than A — you may feel it in your upper back tomorrow. That's good.</div>
+      </div>
+    </div>
+
+    <div class="day-section-label">Thursday · Rest</div>
+    <div class="day-card" onclick="toggleDay(this)">
+      <div class="day-header">
+        <span class="day-pill pill-rest">Rest</span>
+        <span class="day-title">Active Recovery</span>
+        <span class="day-meta">Choose one</span>
+        <svg class="day-chev" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+      </div>
+      <div class="day-body">
+        <div class="rest-activity"><div class="rest-icon">🏊</div><div class="rest-text"><strong>Pool session</strong><span>30 min if comfortable. The water helps flush out any muscle soreness from Wednesday.</span></div></div>
+        <div class="rest-activity"><div class="rest-icon">🚴</div><div class="rest-text"><strong>Pedal exerciser or gym bike</strong><span>25 min easy. This is recovery, not training — keep it comfortable.</span></div></div>
+        <div class="rest-activity"><div class="rest-icon">🧘</div><div class="rest-text"><strong>Full rest + stretching</strong><span>Fine to just stretch today, especially if Wednesday's session left you tired.</span></div></div>
+      </div>
+    </div>
+
+    <div class="day-section-label">Friday · Gym</div>
+    <div class="day-card" onclick="toggleDay(this)">
+      <div class="day-header">
+        <span class="day-pill pill-gym">Gym</span>
+        <span class="day-title">Session A — Legs & Push</span>
+        <span class="day-meta">~50 min</span>
+        <svg class="day-chev" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+      </div>
+      <div class="day-body">
+        <div class="info-note">Session A again. By week 4, these movements should feel familiar and you should be able to push the weights slightly harder.</div>
+        <div class="exercise-row"><div class="ex-num">1</div><div class="ex-info"><div class="ex-name">Leg Press (Machine)</div><div class="ex-note">Week 4: push to find a weight where the last 2 reps are genuinely challenging but achievable.</div></div><div class="ex-sets">3×12</div></div>
+        <div class="exercise-row"><div class="ex-num">2</div><div class="ex-info"><div class="ex-name">Leg Extension (Machine)</div><div class="ex-note">Controlled extension. Don't let the weight crash down — control the lowering phase.</div></div><div class="ex-sets">3×12</div></div>
+        <div class="exercise-row"><div class="ex-num">3</div><div class="ex-info"><div class="ex-name">Seated Chest Press (Machine)</div><div class="ex-note">Push up, breathe out. Return slowly, breathe in.</div></div><div class="ex-sets">3×12</div></div>
+        <div class="exercise-row"><div class="ex-num">4</div><div class="ex-info"><div class="ex-name">Seated Overhead Press (Machine)</div><div class="ex-note">If wrists allow.</div></div><div class="ex-sets">3×12</div></div>
+        <div class="exercise-row"><div class="ex-num">5</div><div class="ex-info"><div class="ex-name">Seated Knee Raise (Core)</div><div class="ex-note">Getting stronger here too — try slowing the lowering phase right down.</div></div><div class="ex-sets">3×12</div></div>
+        <div class="warm-note">4 weeks done by the end of this session. You are already stronger than when you started.</div>
+      </div>
+    </div>
+
+    <div class="day-section-label">Saturday · Rest</div>
+    <div class="day-card" onclick="toggleDay(this)">
+      <div class="day-header"><span class="day-pill pill-rest">Rest</span><span class="day-title">Weekend Recovery</span><span class="day-meta">Light activity</span><svg class="day-chev" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg></div>
+      <div class="day-body">
+        <div class="rest-activity"><div class="rest-icon">🏊</div><div class="rest-text"><strong>Pool session</strong><span>35 min if comfortable. You've built real tolerance for this by now.</span></div></div>
+        <div class="rest-activity"><div class="rest-icon">🚶</div><div class="rest-text"><strong>Gentle walk</strong><span>15–20 min on flat ground. Enjoyment over effort.</span></div></div>
+      </div>
+    </div>
+
+    <div class="day-section-label">Sunday · Rest</div>
+    <div class="day-card" onclick="toggleDay(this)">
+      <div class="day-header"><span class="day-pill pill-rest">Rest</span><span class="day-title">Full Rest Day</span><span class="day-meta">Recover completely</span><svg class="day-chev" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg></div>
+      <div class="day-body">
+        <div class="rest-activity"><div class="rest-icon">☕</div><div class="rest-text"><strong>Rest and recover</strong><span>Check in with how you're feeling. Any significant pain that isn't just muscle tiredness should be discussed with your GP.</span></div></div>
+        <div class="rest-activity"><div class="rest-icon">📏</div><div class="rest-text"><strong>End of Week 4: Take measurements</strong><span>Waist, hips, upper arms. Compare to your week 1 numbers. There will be a difference.</span></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== WEEKS 5–6 ===== -->
+  <div class="week-content" id="week-2">
+    <div class="week-header"><div class="week-badge">Phase 3 · Weeks 5–6</div><div class="week-phase">Progressive Overload</div></div>
+    <div class="week-desc">Reduce to 10 reps but increase weight — the last 2 reps should feel challenging. This is where real strength adaptations happen. Rest 2 minutes between sets.</div>
+
+    <div class="day-section-label">Monday · Gym</div>
+    <div class="day-card" onclick="toggleDay(this)">
+      <div class="day-header">
+        <span class="day-pill pill-gym">Gym</span>
+        <span class="day-title">Session A — Legs & Push</span>
+        <span class="day-meta">~55 min</span>
+        <svg class="day-chev" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+      </div>
+      <div class="day-body">
+        <div class="info-note">5 min bike warm-up + 5 min light stretching. Now 3×10 with heavier weights. Rest 2 full minutes between sets.</div>
+        <div class="exercise-row"><div class="ex-num">1</div><div class="ex-info"><div class="ex-name">Leg Press (Machine)</div><div class="ex-note">Meaningful weight increase from phase 2. Last 2 reps should feel hard — but not so hard your form breaks.</div></div><div class="ex-sets">3×10</div></div>
+        <div class="exercise-row"><div class="ex-num">2</div><div class="ex-info"><div class="ex-name">Leg Extension (Machine)</div><div class="ex-note">Heavier. Extend fully, lower for 4 seconds. Controlled throughout.</div></div><div class="ex-sets">3×10</div></div>
+        <div class="exercise-row"><div class="ex-num">3</div><div class="ex-info"><div class="ex-name">Seated Chest Press (Machine)</div><div class="ex-note">Heavier than before. Breathe out as you push, in as you return slowly.</div></div><div class="ex-sets">3×10</div></div>
+        <div class="exercise-row"><div class="ex-num">4</div><div class="ex-info"><div class="ex-name">Hip Abductor (Machine)</div><div class="ex-note">Push legs apart against resistance. Brilliant for hip and ankle stability.</div></div><div class="ex-sets">3×12</div></div>
+        <div class="exercise-row"><div class="ex-num">5</div><div class="ex-info"><div class="ex-name">Seated Cable Bicep Curl</div><div class="ex-note">New addition. Low cable, underhand grip, curl to chin. Easier on wrists than dumbbells.</div></div><div class="ex-sets">3×12</div></div>
+        <div class="exercise-row"><div class="ex-num">6</div><div class="ex-info"><div class="ex-name">Seated Knee Raise (Core)</div><div class="ex-note">Heavier or slower — make it harder than before somehow.</div></div><div class="ex-sets">3×12</div></div>
+      </div>
+    </div>
+
+    <div class="day-section-label">Tuesday · Rest</div>
+    <div class="day-card" onclick="toggleDay(this)">
+      <div class="day-header"><span class="day-pill pill-rest">Rest</span><span class="day-title">Active Recovery</span><span class="day-meta">Choose one</span><svg class="day-chev" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg></div>
+      <div class="day-body">
+        <div class="rest-activity"><div class="rest-icon">🏊</div><div class="rest-text"><strong>Pool walking / aqua aerobics</strong><span>35–40 min. By now this should feel like a pleasant habit.</span></div></div>
+        <div class="rest-activity"><div class="rest-icon">🚴</div><div class="rest-text"><strong>Gym bike or pedal exerciser</strong><span>30 min, moderate resistance. Try 2 min slightly harder, 3 min easy, repeat — gentle intervals.</span></div></div>
+        <div class="rest-activity"><div class="rest-icon">🧘</div><div class="rest-text"><strong>Foam rolling + stretching</strong><span>If your gym has foam rollers, gently roll the backs of your thighs and upper back. Never roll joints directly.</span></div></div>
+      </div>
+    </div>
+
+    <div class="day-section-label">Wednesday · Gym</div>
+    <div class="day-card" onclick="toggleDay(this)">
+      <div class="day-header">
+        <span class="day-pill pill-gym">Gym</span>
+        <span class="day-title">Session B — Back & Pull</span>
+        <span class="day-meta">~55 min</span>
+        <svg class="day-chev" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+      </div>
+      <div class="day-body">
+        <div class="info-note">5 min warm-up. Session B pulling focus — heavier than phase 2. You should feel notably stronger on lat pulldown and row than you did 4 weeks ago.</div>
+        <div class="exercise-row"><div class="ex-num">1</div><div class="ex-info"><div class="ex-name">Lat Pulldown (Machine)</div><div class="ex-note">Heavier than phase 2. Control the return — don't let the weight pull you upward.</div></div><div class="ex-sets">3×10</div></div>
+        <div class="exercise-row"><div class="ex-num">2</div><div class="ex-info"><div class="ex-name">Seated Row (Cable Machine)</div><div class="ex-note">Heavier. Sit tall — posture is more important than the number on the stack.</div></div><div class="ex-sets">3×10</div></div>
+        <div class="exercise-row"><div class="ex-num">3</div><div class="ex-info"><div class="ex-name">Leg Curl (Machine)</div><div class="ex-note">Heavier or slower — whichever makes it harder. Strong hamstrings protect your knees.</div></div><div class="ex-sets">3×10</div></div>
+        <div class="exercise-row"><div class="ex-num">4</div><div class="ex-info"><div class="ex-name">Hip Abductor (Machine)</div><div class="ex-note">Add this to Session B as well now. The more you do it, the more stable your hips become.</div></div><div class="ex-sets">3×12</div></div>
+        <div class="exercise-row"><div class="ex-num">5</div><div class="ex-info"><div class="ex-name">Seated Overhead Press (Machine)</div><div class="ex-note">If wrists allow. Heavier than phase 2.</div></div><div class="ex-sets">3×10</div></div>
+        <div class="exercise-row"><div class="ex-num">6</div><div class="ex-info"><div class="ex-name">Seated Oblique Twist (Core)</div><div class="ex-note">New movement. Sit on bench, hands together, twist gently left then right. No weight needed yet.</div></div><div class="ex-sets">3×16</div></div>
+      </div>
+    </div>
+
+    <div class="day-section-label">Thursday · Rest</div>
+    <div class="day-card" onclick="toggleDay(this)">
+      <div class="day-header"><span class="day-pill pill-rest">Rest</span><span class="day-title">Active Recovery</span><span class="day-meta">Choose one</span><svg class="day-chev" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg></div>
+      <div class="day-body">
+        <div class="rest-activity"><div class="rest-icon">🏊</div><div class="rest-text"><strong>Pool session</strong><span>35 min. You're fit enough now that this feels genuinely enjoyable rather than tiring.</span></div></div>
+        <div class="rest-activity"><div class="rest-icon">🚴</div><div class="rest-text"><strong>Bike — moderate effort</strong><span>30 min. Comfortable conversation pace — you should be able to speak full sentences.</span></div></div>
+      </div>
+    </div>
+
+    <div class="day-section-label">Friday · Gym</div>
+    <div class="day-card" onclick="toggleDay(this)">
+      <div class="day-header">
+        <span class="day-pill pill-gym">Gym</span>
+        <span class="day-title">Session A — Legs & Push</span>
+        <span class="day-meta">~55 min</span>
+        <svg class="day-chev" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+      </div>
+      <div class="day-body">
+        <div class="info-note">Week 6 Friday. Same as Monday's session — aim to match or beat Monday's weights. You've earned the right to push a little.</div>
+        <div class="exercise-row"><div class="ex-num">1</div><div class="ex-info"><div class="ex-name">Leg Press (Machine)</div><div class="ex-note">Match or exceed Monday. Last 2 reps — really work for them.</div></div><div class="ex-sets">3×10</div></div>
+        <div class="exercise-row"><div class="ex-num">2</div><div class="ex-info"><div class="ex-name">Leg Extension (Machine)</div><div class="ex-note">Controlled. Strong quads help protect the knee joint significantly.</div></div><div class="ex-sets">3×10</div></div>
+        <div class="exercise-row"><div class="ex-num">3</div><div class="ex-info"><div class="ex-name">Seated Chest Press (Machine)</div><div class="ex-note">Push well. Upper body strength has come a long way since week 1.</div></div><div class="ex-sets">3×10</div></div>
+        <div class="exercise-row"><div class="ex-num">4</div><div class="ex-info"><div class="ex-name">Hip Abductor (Machine)</div><div class="ex-note">Strong and steady.</div></div><div class="ex-sets">3×12</div></div>
+        <div class="exercise-row"><div class="ex-num">5</div><div class="ex-info"><div class="ex-name">Seated Cable Bicep Curl</div><div class="ex-note">Arms are working independently now. Controlled curl.</div></div><div class="ex-sets">3×12</div></div>
+        <div class="exercise-row"><div class="ex-num">6</div><div class="ex-info"><div class="ex-name">Seated Knee Raise (Core)</div><div class="ex-note">Core is much stronger than week 1. Feel the difference.</div></div><div class="ex-sets">3×12</div></div>
+        <div class="warm-note">6 weeks done. Take your measurements this weekend — the changes will be visible now.</div>
+      </div>
+    </div>
+
+    <div class="day-section-label">Saturday · Rest</div>
+    <div class="day-card" onclick="toggleDay(this)">
+      <div class="day-header"><span class="day-pill pill-rest">Rest</span><span class="day-title">Weekend Recovery</span><span class="day-meta">Light activity</span><svg class="day-chev" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg></div>
+      <div class="day-body">
+        <div class="rest-activity"><div class="rest-icon">🏊</div><div class="rest-text"><strong>Pool session</strong><span>40 min. Try alternating pool walking and gentle swimming if comfortable.</span></div></div>
+        <div class="rest-activity"><div class="rest-icon">📏</div><div class="rest-text"><strong>Take your week 6 measurements</strong><span>Waist, hips, upper arms. Compare to week 1 and week 4. The numbers will have moved.</span></div></div>
+      </div>
+    </div>
+
+    <div class="day-section-label">Sunday · Rest</div>
+    <div class="day-card" onclick="toggleDay(this)">
+      <div class="day-header"><span class="day-pill pill-rest">Rest</span><span class="day-title">Full Rest Day</span><span class="day-meta">Recover completely</span><svg class="day-chev" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg></div>
+      <div class="day-body">
+        <div class="rest-activity"><div class="rest-icon">☕</div><div class="rest-text"><strong>Rest and reflect</strong><span>Two weeks left. Think about how different this feels compared to your first session. That difference is real progress.</span></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== WEEKS 7–8 ===== -->
+  <div class="week-content" id="week-3">
+    <div class="week-header"><div class="week-badge">Phase 4 · Weeks 7–8</div><div class="week-phase">Consolidation & Push</div></div>
+    <div class="week-desc">3×8 with the heaviest weights yet — the last 2 reps should be a real effort. Rest 2–3 minutes between sets. These two weeks show you what you're actually capable of.</div>
+
+    <div class="day-section-label">Monday · Gym</div>
+    <div class="day-card" onclick="toggleDay(this)">
+      <div class="day-header">
+        <span class="day-pill pill-gym">Gym</span>
+        <span class="day-title">Session A — Legs & Push</span>
+        <span class="day-meta">~60 min</span>
+        <svg class="day-chev" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+      </div>
+      <div class="day-body">
+        <div class="info-note">Full warm-up: 5 min bike + mobility work. 3×8 today — fewer reps, more weight. Take the full 2–3 min rest between sets.</div>
+        <div class="exercise-row"><div class="ex-num">1</div><div class="ex-info"><div class="ex-name">Leg Press (Machine)</div><div class="ex-note">Heaviest weight yet. 8 reps. The last one should take real effort — but form stays perfect throughout.</div></div><div class="ex-sets">3×8</div></div>
+        <div class="exercise-row"><div class="ex-num">2</div><div class="ex-info"><div class="ex-name">Leg Extension (Machine)</div><div class="ex-note">Heavier. Full extension, 4-second lowering. Quads burning is the point.</div></div><div class="ex-sets">3×8</div></div>
+        <div class="exercise-row"><div class="ex-num">3</div><div class="ex-info"><div class="ex-name">Seated Chest Press (Machine)</div><div class="ex-note">Heaviest to date. Breathe out on the push. Impressive how far this has come from week 1.</div></div><div class="ex-sets">3×8</div></div>
+        <div class="exercise-row"><div class="ex-num">4</div><div class="ex-info"><div class="ex-name">Hip Abductor + Adductor (Machine)</div><div class="ex-note">Both directions this phase — push out (abductor) then squeeze in (adductor). Superb for hip and ankle stability.</div></div><div class="ex-sets">3×12 each</div></div>
+        <div class="exercise-row"><div class="ex-num">5</div><div class="ex-info"><div class="ex-name">Seated Cable Bicep Curl</div><div class="ex-note">Heaviest yet. Slow, controlled, squeeze at the top.</div></div><div class="ex-sets">3×10</div></div>
+        <div class="exercise-row"><div class="ex-num">6</div><div class="ex-info"><div class="ex-name">Seated Oblique Twist (Core)</div><div class="ex-note">Can hold a small weight plate if this has become easy. Rotate from the waist, not the arms.</div></div><div class="ex-sets">3×20</div></div>
+        <div class="warm-note">Well done. The hardest sessions of the whole programme — and you're doing them.</div>
+      </div>
+    </div>
+
+    <div class="day-section-label">Tuesday · Rest</div>
+    <div class="day-card" onclick="toggleDay(this)">
+      <div class="day-header"><span class="day-pill pill-rest">Rest</span><span class="day-title">Active Recovery</span><span class="day-meta">Choose one</span><svg class="day-chev" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg></div>
+      <div class="day-body">
+        <div class="rest-activity"><div class="rest-icon">🏊</div><div class="rest-text"><strong>Pool session — main cardio</strong><span>40 min. You've built real fitness. Try alternating pool walking and gentle swimming.</span></div></div>
+        <div class="rest-activity"><div class="rest-icon">🚴</div><div class="rest-text"><strong>Bike — moderate effort</strong><span>30 min. Push slightly harder than earlier weeks — your cardiovascular fitness has improved.</span></div></div>
+      </div>
+    </div>
+
+    <div class="day-section-label">Wednesday · Gym</div>
+    <div class="day-card" onclick="toggleDay(this)">
+      <div class="day-header">
+        <span class="day-pill pill-gym">Gym</span>
+        <span class="day-title">Session B — Back & Pull</span>
+        <span class="day-meta">~60 min</span>
+        <svg class="day-chev" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+      </div>
+      <div class="day-body">
+        <div class="info-note">5 min warm-up. Heaviest Session B of the programme. Your back and posture are noticeably stronger than week 1.</div>
+        <div class="exercise-row"><div class="ex-num">1</div><div class="ex-info"><div class="ex-name">Lat Pulldown (Machine)</div><div class="ex-note">Heaviest yet. You should feel this working deep in your mid-back, not just your arms.</div></div><div class="ex-sets">3×8</div></div>
+        <div class="exercise-row"><div class="ex-num">2</div><div class="ex-info"><div class="ex-name">Seated Row (Cable Machine)</div><div class="ex-note">Most weight to date. Good posture matters more than the number on the stack.</div></div><div class="ex-sets">3×8</div></div>
+        <div class="exercise-row"><div class="ex-num">3</div><div class="ex-info"><div class="ex-name">Leg Curl (Machine)</div><div class="ex-note">Heavier. Strong hamstrings protect your knees on stairs and slopes.</div></div><div class="ex-sets">3×8</div></div>
+        <div class="exercise-row"><div class="ex-num">4</div><div class="ex-info"><div class="ex-name">Hip Abductor + Adductor</div><div class="ex-note">Both directions. These are now a core part of every session — your hip stability is significantly better.</div></div><div class="ex-sets">3×12 each</div></div>
+        <div class="exercise-row"><div class="ex-num">5</div><div class="ex-info"><div class="ex-name">Seated Cable Tricep Pushdown</div><div class="ex-note">New addition. High cable, overhand grip, push down to hips. Full arm workout with biceps from Session A.</div></div><div class="ex-sets">3×10</div></div>
+        <div class="exercise-row"><div class="ex-num">6</div><div class="ex-info"><div class="ex-name">Seated Oblique Twist (Core)</div><div class="ex-note">Final phase core. Strong and controlled.</div></div><div class="ex-sets">3×20</div></div>
+      </div>
+    </div>
+
+    <div class="day-section-label">Thursday · Rest</div>
+    <div class="day-card" onclick="toggleDay(this)">
+      <div class="day-header"><span class="day-pill pill-rest">Rest</span><span class="day-title">Active Recovery</span><span class="day-meta">Choose one</span><svg class="day-chev" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg></div>
+      <div class="day-body">
+        <div class="rest-activity"><div class="rest-icon">🏊</div><div class="rest-text"><strong>Pool session</strong><span>40 min. You know the drill — and it genuinely feels good now.</span></div></div>
+        <div class="rest-activity"><div class="rest-icon">🧘</div><div class="rest-text"><strong>Full rest + stretching</strong><span>Especially valid with just 2 more sessions to go. Your body has worked hard.</span></div></div>
+      </div>
+    </div>
+
+    <div class="day-section-label">Friday · Gym</div>
+    <div class="day-card" onclick="toggleDay(this)">
+      <div class="day-header">
+        <span class="day-pill pill-gym">Gym</span>
+        <span class="day-title">Session A — Final Session</span>
+        <span class="day-meta">~60 min</span>
+        <svg class="day-chev" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+      </div>
+      <div class="day-body">
+        <div class="info-note">This is the last gym session of the 8-week programme. Make it count — but also take a moment to notice how far you've come from your very first session.</div>
+        <div class="exercise-row"><div class="ex-num">1</div><div class="ex-info"><div class="ex-name">Leg Press (Machine)</div><div class="ex-note">Heaviest of the programme. Compare to your very first session — the difference is real strength.</div></div><div class="ex-sets">3×8</div></div>
+        <div class="exercise-row"><div class="ex-num">2</div><div class="ex-info"><div class="ex-name">Leg Extension (Machine)</div><div class="ex-note">Strong finish on the quads.</div></div><div class="ex-sets">3×8</div></div>
+        <div class="exercise-row"><div class="ex-num">3</div><div class="ex-info"><div class="ex-name">Seated Chest Press (Machine)</div><div class="ex-note">Best effort today.</div></div><div class="ex-sets">3×8</div></div>
+        <div class="exercise-row"><div class="ex-num">4</div><div class="ex-info"><div class="ex-name">Hip Abductor + Adductor</div><div class="ex-note">Strong and stable. These machines have helped your hips enormously.</div></div><div class="ex-sets">3×12 each</div></div>
+        <div class="exercise-row"><div class="ex-num">5</div><div class="ex-info"><div class="ex-name">Seated Cable Bicep Curl</div><div class="ex-note">Last set of the programme. Make it a good one.</div></div><div class="ex-sets">3×10</div></div>
+        <div class="exercise-row"><div class="ex-num">6</div><div class="ex-info"><div class="ex-name">Seated Oblique Twist (Core)</div><div class="ex-note">Final exercise of 8 weeks. Sit tall, breathe, finish strong.</div></div><div class="ex-sets">3×20</div></div>
+        <div class="warm-note">🎉 8 weeks complete. Take your final measurements this weekend and compare to week 1. You have built real, lasting strength. This is just the beginning.</div>
+      </div>
+    </div>
+
+    <div class="day-section-label">Saturday · Rest</div>
+    <div class="day-card" onclick="toggleDay(this)">
+      <div class="day-header"><span class="day-pill pill-rest">Rest</span><span class="day-title">Weekend Recovery</span><span class="day-meta">Celebrate</span><svg class="day-chev" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg></div>
+      <div class="day-body">
+        <div class="rest-activity"><div class="rest-icon">📏</div><div class="rest-text"><strong>Final measurements</strong><span>Waist, hips, upper arms. Write down the numbers and compare to week 1. Every mm is real.</span></div></div>
+        <div class="rest-activity"><div class="rest-icon">🏊</div><div class="rest-text"><strong>Pool session</strong><span>A celebratory pool walk or swim if you feel like it. You've earned it.</span></div></div>
+        <div class="rest-activity"><div class="rest-icon">✅</div><div class="rest-text"><strong>What next?</strong><span>You can now repeat this programme with higher starting weights, or ask for a new programme building on this one. The habit is the achievement — keep it going.</span></div></div>
+      </div>
+    </div>
+
+    <div class="day-section-label">Sunday · Rest</div>
+    <div class="day-card" onclick="toggleDay(this)">
+      <div class="day-header"><span class="day-pill pill-rest">Rest</span><span class="day-title">Programme Complete</span><span class="day-meta">Well done</span><svg class="day-chev" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg></div>
+      <div class="day-body">
+        <div class="rest-activity"><div class="rest-icon">☕</div><div class="rest-text"><strong>Rest and be proud</strong><span>8 weeks of consistent effort is genuinely hard. You showed up. That matters more than any number.</span></div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="top-spacer"></div><div class="top-spacer"></div>
+</div>
+
+<!-- PAGE: HOME PROGRAMME -->
+<div class="page" id="page-home">
+  <div class="page-header">
+    <h1>Home Plan</h1>
+    <p>Chair · bands · light dumbbells · no gym needed</p>
+  </div>
+  <div class="top-spacer"></div>
+
+  <div class="important-note">
+    <strong>⚠️ Before every session</strong>
+    Stop any exercise that causes sharp joint pain — especially in the hip, ankle, or wrists. Mild muscle effort and gentle warmth in a muscle is fine. Sharp or worsening pain is not. With fibromyalgia, check in the next morning — if you're significantly worse, the session was too much. Scale back, don't push through.
+  </div>
+
+  <div class="alert alert-sage">
+    <div class="alert-icon">💡</div>
+    <div><strong>Hip pain note:</strong> The constant hip stiffness — worse on stairs and standing — is very likely your hip compensating for two years of protecting your ankle. It's worth mentioning to your GP alongside the toe numbness. The exercises here are chosen to gently strengthen the muscles around the hip without aggravating it.</div>
+  </div>
+
+  <div class="progress-note">
+    <div style="font-size:22px;flex-shrink:0">🏠</div>
+    <div><strong style="display:block;margin-bottom:3px;font-weight:500">How this works</strong>3 session days, 4 rest days — same structure as the gym plan. All sessions are done seated or standing next to a chair for support. Tap any day to expand. Start with Week 1 and work through in order.</div>
+  </div>
+
+  <div class="week-tabs">
+    <button class="home-week-tab active" onclick="switchHomeWeek(0,this)">Weeks 1–2</button>
+    <button class="home-week-tab" onclick="switchHomeWeek(1,this)">Weeks 3–4</button>
+    <button class="home-week-tab" onclick="switchHomeWeek(2,this)">Weeks 5–6</button>
+    <button class="home-week-tab" onclick="switchHomeWeek(3,this)">Weeks 7–8</button>
+  </div>
+
+  <!-- HOME WEEKS 1–2 -->
+  <div class="home-week-content active" id="home-week-0">
+    <div class="week-header"><div class="week-badge">Phase 1 · Weeks 1–2</div><div class="week-phase">Starting Gently</div></div>
+    <div class="week-desc">Everything is seated or chair-supported. Very low effort. The goal is to move your joints, get blood flowing, and prove to your body that movement is safe. If you feel fine the next morning, you've got the level right.</div>
+
+    <div class="day-section-label">Monday · Session</div>
+    <div class="day-card" onclick="toggleDay(this)">
+      <div class="day-header">
+        <span class="day-pill pill-gym">Session</span>
+        <span class="day-title">Seated Strength A</span>
+        <span class="day-meta">~25 min</span>
+        <svg class="day-chev" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+      </div>
+      <div class="day-body">
+        <div class="info-note">Sit in a firm chair with a straight back. Have your bands and lightest dumbbells nearby. Start with 3 minutes of gentle seated marching — just lifting each knee slowly while seated.</div>
+        <div class="exercise-row"><div class="ex-num">1</div><div class="ex-info"><div class="ex-name">Seated Knee Extension</div><div class="ex-note">Sit upright, slowly straighten one leg until nearly flat, hold 2 seconds, lower. Alternating legs. Works the quads — key muscles for hip and knee support.</div></div><div class="ex-sets">2×10 each</div></div>
+        <div class="exercise-row"><div class="ex-num">2</div><div class="ex-info"><div class="ex-name">Seated Band Row</div><div class="ex-note">Loop band around a door handle or table leg at chest height. Hold one end in each hand with soft grip. Pull elbows back, squeeze shoulder blades. Wrists stay straight.</div></div><div class="ex-sets">2×12</div></div>
+        <div class="exercise-row"><div class="ex-num">3</div><div class="ex-info"><div class="ex-name">Seated Dumbbell Curl</div><div class="ex-note">Lightest dumbbells. Seated, elbows at sides, curl slowly to shoulder and lower. If wrists hurt, use a band looped under your foot instead — much gentler grip.</div></div><div class="ex-sets">2×10</div></div>
+        <div class="exercise-row"><div class="ex-num">4</div><div class="ex-info"><div class="ex-name">Seated Hip Abduction (Band)</div><div class="ex-note">Loop a light band just above both knees. Seated, push knees apart against band resistance, hold 2 seconds, release. Directly strengthens the muscles around your hip.</div></div><div class="ex-sets">2×12</div></div>
+        <div class="exercise-row"><div class="ex-num">5</div><div class="ex-info"><div class="ex-name">Seated Chest Press (Dumbbells)</div><div class="ex-note">Sit upright, light dumbbells at chest height, push forward and together, return slowly. Keep wrists neutral throughout.</div></div><div class="ex-sets">2×10</div></div>
+        <div class="exercise-row"><div class="ex-num">6</div><div class="ex-info"><div class="ex-name">Seated Marching (Core)</div><div class="ex-note">Slow alternating knee lifts. Sit tall, engage your tummy gently. Finish every session with this.</div></div><div class="ex-sets">2×30s</div></div>
+        <div class="warm-note">Finish with: seated quad stretch (hold ankle gently, extend leg), seated upper back stretch (hug yourself and round forward gently). Hold each 20 seconds.</div>
+      </div>
+    </div>
+
+    <div class="day-section-label">Tuesday · Rest</div>
+    <div class="day-card" onclick="toggleDay(this)">
+      <div class="day-header"><span class="day-pill pill-rest">Rest</span><span class="day-title">Gentle Movement</span><span class="day-meta">~15–20 min</span><svg class="day-chev" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg></div>
+      <div class="day-body">
+        <div class="rest-activity"><div class="rest-icon">🪑</div><div class="rest-text"><strong>Seated pedal exerciser (ideal)</strong><span>20 min easy pace. Keeps joints mobile without any impact. If you don't have one, these cost £15–30 online and are worth every penny for your situation.</span></div></div>
+        <div class="rest-activity"><div class="rest-icon">🧘</div><div class="rest-text"><strong>Seated morning mobility routine</strong><span>10 min of slow joint circles — ankles (seated, just rotate the foot), wrists (gentle circles), shoulders, and hips (seated figure-of-4 stretch). Do this every morning to reduce the stiffness.</span></div></div>
+        <div class="rest-activity"><div class="rest-icon">🚶</div><div class="rest-text"><strong>Short flat walk if joints allow</strong><span>10–15 min max. Stop if toes go numb or hip worsens. Not the priority today — just a bonus if you feel well.</span></div></div>
+      </div>
+    </div>
+
+    <div class="day-section-label">Wednesday · Session</div>
+    <div class="day-card" onclick="toggleDay(this)">
+      <div class="day-header">
+        <span class="day-pill pill-gym">Session</span>
+        <span class="day-title">Seated Strength B</span>
+        <span class="day-meta">~25 min</span>
+        <svg class="day-chev" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+      </div>
+      <div class="day-body">
+        <div class="info-note">Session B focuses on the back, shoulders, and hips from a different angle. Same gentle approach — movement quality over effort.</div>
+        <div class="exercise-row"><div class="ex-num">1</div><div class="ex-info"><div class="ex-name">Seated Band Pull-Apart</div><div class="ex-note">Hold a band at chest height, hands shoulder-width. Pull hands apart, stretching the band across your chest. Release slowly. Brilliant for posture and upper back.</div></div><div class="ex-sets">2×12</div></div>
+        <div class="exercise-row"><div class="ex-num">2</div><div class="ex-info"><div class="ex-name">Chair-Supported Standing Hip Hinge</div><div class="ex-note">Stand behind chair, hands resting on back for support. Hinge forward from hips (not waist), keeping back flat, then stand back up. Gentle — goes as far as comfortable. Wakes up the hip and hamstrings without loading the ankle heavily.</div></div><div class="ex-sets">2×10</div></div>
+        <div class="exercise-row"><div class="ex-num">3</div><div class="ex-info"><div class="ex-name">Seated Overhead Press (Light Dumbbells)</div><div class="ex-note">If wrists allow. Seated upright, press dumbbells upward slowly, lower with control. Skip entirely if wrists are painful today — no penalty for skipping.</div></div><div class="ex-sets">2×10</div></div>
+        <div class="exercise-row"><div class="ex-num">4</div><div class="ex-info"><div class="ex-name">Seated Leg Press (Wall)</div><div class="ex-note">Sit in chair close to a wall, place both feet flat on the wall at knee height, push gently. Simulates the leg press without any equipment. Very light effort only.</div></div><div class="ex-sets">2×12</div></div>
+        <div class="exercise-row"><div class="ex-num">5</div><div class="ex-info"><div class="ex-name">Seated Band Lateral Raise</div><div class="ex-note">Loop band under chair seat, hold each end. Raise arms out to sides to shoulder height, lower slowly. Good for shoulder strength without wrist stress.</div></div><div class="ex-sets">2×10</div></div>
+        <div class="exercise-row"><div class="ex-num">6</div><div class="ex-info"><div class="ex-name">Seated Marching (Core)</div><div class="ex-note">Slow and tall. Finish every session with this.</div></div><div class="ex-sets">2×30s</div></div>
+        <div class="warm-note">Stretch: seated hip stretch (cross one ankle over opposite knee, lean forward gently — careful with hip pain, only as far as comfortable), and shoulder cross-body stretch.</div>
+      </div>
+    </div>
+
+    <div class="day-section-label">Thursday · Rest</div>
+    <div class="day-card" onclick="toggleDay(this)">
+      <div class="day-header"><span class="day-pill pill-rest">Rest</span><span class="day-title">Gentle Movement</span><span class="day-meta">~15 min</span><svg class="day-chev" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg></div>
+      <div class="day-body">
+        <div class="rest-activity"><div class="rest-icon">🪑</div><div class="rest-text"><strong>Seated pedal exerciser</strong><span>15–20 min easy. Particularly good today — helps flush any muscle soreness from Wednesday.</span></div></div>
+        <div class="rest-activity"><div class="rest-icon">🧘</div><div class="rest-text"><strong>Morning joint mobility</strong><span>Seated ankle rotations, gentle wrist circles, hip figure-of-4 stretch. Do this before getting out of bed if mornings are very stiff.</span></div></div>
+      </div>
+    </div>
+
+    <div class="day-section-label">Friday · Session</div>
+    <div class="day-card" onclick="toggleDay(this)">
+      <div class="day-header">
+        <span class="day-pill pill-gym">Session</span>
+        <span class="day-title">Seated Strength A (repeat)</span>
+        <span class="day-meta">~25 min</span>
+        <svg class="day-chev" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+      </div>
+      <div class="day-body">
+        <div class="info-note">Same as Monday. The movements should feel slightly more familiar. Note which exercises felt easiest — those are candidates for slightly more resistance next phase.</div>
+        <div class="exercise-row"><div class="ex-num">1</div><div class="ex-info"><div class="ex-name">Seated Knee Extension</div><div class="ex-note">Try holding the extended position for 3 seconds instead of 2. Small progression.</div></div><div class="ex-sets">2×10 each</div></div>
+        <div class="exercise-row"><div class="ex-num">2</div><div class="ex-info"><div class="ex-name">Seated Band Row</div><div class="ex-note">Focus on the squeeze — hold for a moment at the end of each pull before releasing.</div></div><div class="ex-sets">2×12</div></div>
+        <div class="exercise-row"><div class="ex-num">3</div><div class="ex-info"><div class="ex-name">Seated Dumbbell Curl</div><div class="ex-note">Slow and controlled. 2 seconds up, 3 seconds down.</div></div><div class="ex-sets">2×10</div></div>
+        <div class="exercise-row"><div class="ex-num">4</div><div class="ex-info"><div class="ex-name">Seated Hip Abduction (Band)</div><div class="ex-note">Push apart and really hold the squeeze for 3 seconds before releasing. Feel the outer hip working.</div></div><div class="ex-sets">2×12</div></div>
+        <div class="exercise-row"><div class="ex-num">5</div><div class="ex-info"><div class="ex-name">Seated Chest Press (Dumbbells)</div><div class="ex-note">Controlled throughout. Wrists stay straight.</div></div><div class="ex-sets">2×10</div></div>
+        <div class="exercise-row"><div class="ex-num">6</div><div class="ex-info"><div class="ex-name">Seated Marching (Core)</div><div class="ex-note">Three sessions done this week. That's a real achievement. Finish strong.</div></div><div class="ex-sets">2×30s</div></div>
+        <div class="warm-note">Rest well this weekend. If you feel fine on Saturday morning — no flare, no significant extra pain — you've nailed the level for week 1.</div>
+      </div>
+    </div>
+
+    <div class="day-section-label">Saturday · Rest</div>
+    <div class="day-card" onclick="toggleDay(this)">
+      <div class="day-header"><span class="day-pill pill-rest">Rest</span><span class="day-title">Weekend Recovery</span><span class="day-meta">Easy only</span><svg class="day-chev" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg></div>
+      <div class="day-body">
+        <div class="rest-activity"><div class="rest-icon">🪑</div><div class="rest-text"><strong>Pedal exerciser or very short walk</strong><span>15–20 min, whichever joints prefer. Entirely optional today.</span></div></div>
+        <div class="rest-activity"><div class="rest-icon">🧘</div><div class="rest-text"><strong>Full rest — completely valid</strong><span>You've done 3 sessions this week. Resting on Saturday is part of the plan, not a failure.</span></div></div>
+      </div>
+    </div>
+
+    <div class="day-section-label">Sunday · Rest</div>
+    <div class="day-card" onclick="toggleDay(this)">
+      <div class="day-header"><span class="day-pill pill-rest">Rest</span><span class="day-title">Full Rest Day</span><span class="day-meta">Recover</span><svg class="day-chev" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg></div>
+      <div class="day-body">
+        <div class="rest-activity"><div class="rest-icon">🧘</div><div class="rest-text"><strong>Morning mobility only</strong><span>Seated joint circles before getting up. 5–10 min. This will reduce the morning stiffness over time if done consistently.</span></div></div>
+        <div class="rest-activity"><div class="rest-icon">🍳</div><div class="rest-text"><strong>Protein prep suggestion</strong><span>Boil some eggs, portion Greek yoghurt, open a tin of salmon. Small prep now makes hitting 90g protein tomorrow much easier.</span></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- HOME WEEKS 3–4 -->
+  <div class="home-week-content" id="home-week-1">
+    <div class="week-header"><div class="week-badge">Phase 2 · Weeks 3–4</div><div class="week-phase">Adding Resistance</div></div>
+    <div class="week-desc">Add a third set and increase band resistance or dumbbell weight slightly where things felt comfortable. Sessions are now ~35 min. Still seated or chair-supported throughout.</div>
+
+    <div class="day-section-label">Monday · Session</div>
+    <div class="day-card" onclick="toggleDay(this)">
+      <div class="day-header">
+        <span class="day-pill pill-gym">Session</span>
+        <span class="day-title">Seated Strength A</span>
+        <span class="day-meta">~35 min</span>
+        <svg class="day-chev" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+      </div>
+      <div class="day-body">
+        <div class="info-note">3 sets now. Rest 60–90 seconds between sets. Increase dumbbell weight or band resistance by one step if phase 1 felt manageable.</div>
+        <div class="exercise-row"><div class="ex-num">1</div><div class="ex-info"><div class="ex-name">Seated Knee Extension</div><div class="ex-note">3 sets. Hold the extended position 3–4 seconds. If you have a light ankle weight or band, add very light resistance.</div></div><div class="ex-sets">3×12 each</div></div>
+        <div class="exercise-row"><div class="ex-num">2</div><div class="ex-info"><div class="ex-name">Seated Band Row</div><div class="ex-note">Heavier band or step further back for more resistance. Focus on posture — sit tall throughout.</div></div><div class="ex-sets">3×12</div></div>
+        <div class="exercise-row"><div class="ex-num">3</div><div class="ex-info"><div class="ex-name">Seated Dumbbell Curl</div><div class="ex-note">Next weight up if phase 1 felt very easy. Last 2 reps should feel like effort.</div></div><div class="ex-sets">3×12</div></div>
+        <div class="exercise-row"><div class="ex-num">4</div><div class="ex-info"><div class="ex-name">Seated Hip Abduction (Band)</div><div class="ex-note">Heavier band or position it higher up the thigh for more resistance. Hold squeeze 3 seconds each rep.</div></div><div class="ex-sets">3×15</div></div>
+        <div class="exercise-row"><div class="ex-num">5</div><div class="ex-info"><div class="ex-name">Seated Chest Press (Dumbbells)</div><div class="ex-note">Slightly heavier. Slow on the return — 3 seconds back.</div></div><div class="ex-sets">3×12</div></div>
+        <div class="exercise-row"><div class="ex-num">6</div><div class="ex-info"><div class="ex-name">Seated Knee Raise (Core)</div><div class="ex-note">Upgrade from marching — both knees raised together, held 2 seconds, lowered with control. Harder on the core.</div></div><div class="ex-sets">3×10</div></div>
+      </div>
+    </div>
+
+    <div class="day-section-label">Tuesday · Rest</div>
+    <div class="day-card" onclick="toggleDay(this)">
+      <div class="day-header"><span class="day-pill pill-rest">Rest</span><span class="day-title">Gentle Movement</span><span class="day-meta">20–25 min</span><svg class="day-chev" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg></div>
+      <div class="day-body">
+        <div class="rest-activity"><div class="rest-icon">🪑</div><div class="rest-text"><strong>Seated pedal exerciser</strong><span>20–25 min. Try slightly more resistance than weeks 1–2 if that felt very easy.</span></div></div>
+        <div class="rest-activity"><div class="rest-icon">🧘</div><div class="rest-text"><strong>Hip mobility focus</strong><span>Seated figure-of-4 stretch (cross ankle over opposite knee, sit tall — go only as far as comfortable with the hip pain). Hold 30 seconds each side.</span></div></div>
+      </div>
+    </div>
+
+    <div class="day-section-label">Wednesday · Session</div>
+    <div class="day-card" onclick="toggleDay(this)">
+      <div class="day-header">
+        <span class="day-pill pill-gym">Session</span>
+        <span class="day-title">Seated Strength B</span>
+        <span class="day-meta">~35 min</span>
+        <svg class="day-chev" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+      </div>
+      <div class="day-body">
+        <div class="info-note">Session B — pulling, back, and hip. 3 sets throughout. One new exercise added this phase.</div>
+        <div class="exercise-row"><div class="ex-num">1</div><div class="ex-info"><div class="ex-name">Seated Band Pull-Apart</div><div class="ex-note">Heavier band. Pull wide, hold 2 seconds, release slowly. Feel the upper back and rear shoulder working.</div></div><div class="ex-sets">3×15</div></div>
+        <div class="exercise-row"><div class="ex-num">2</div><div class="ex-info"><div class="ex-name">Chair-Supported Standing Hip Hinge</div><div class="ex-note">Same movement, but try adding a very light dumbbell in each hand hanging naturally. Increases the hip and hamstring load gently.</div></div><div class="ex-sets">3×12</div></div>
+        <div class="exercise-row"><div class="ex-num">3</div><div class="ex-info"><div class="ex-name">Seated Overhead Press (Dumbbells)</div><div class="ex-note">If wrists allow. Heavier than phase 1. Slow and controlled.</div></div><div class="ex-sets">3×12</div></div>
+        <div class="exercise-row"><div class="ex-num">4</div><div class="ex-info"><div class="ex-name">Chair-Supported Side Step</div><div class="ex-note">New. Stand beside chair, hand on back for support. Step sideways one foot, bring other foot to meet it. 10 steps each direction. Very slow. Works the hip without ankle loading. Stop if hip pain spikes.</div></div><div class="ex-sets">2×10 each way</div></div>
+        <div class="exercise-row"><div class="ex-num">5</div><div class="ex-info"><div class="ex-name">Seated Band Lateral Raise</div><div class="ex-note">Heavier band or slower tempo. Raise to shoulder height, hold 2 seconds.</div></div><div class="ex-sets">3×12</div></div>
+        <div class="exercise-row"><div class="ex-num">6</div><div class="ex-info"><div class="ex-name">Seated Knee Raise (Core)</div><div class="ex-note">Both knees together, hold 2 seconds at top. Lower with control.</div></div><div class="ex-sets">3×10</div></div>
+        <div class="warm-note">Hip stretch after: seated figure-of-4, both sides. Upper back: hug yourself and round forward gently, hold 20 seconds.</div>
+      </div>
+    </div>
+
+    <div class="day-section-label">Thursday · Rest</div>
+    <div class="day-card" onclick="toggleDay(this)">
+      <div class="day-header"><span class="day-pill pill-rest">Rest</span><span class="day-title">Gentle Movement</span><span class="day-meta">20 min</span><svg class="day-chev" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg></div>
+      <div class="day-body">
+        <div class="rest-activity"><div class="rest-icon">🪑</div><div class="rest-text"><strong>Pedal exerciser</strong><span>20 min easy. Your cardiovascular fitness is improving even if it doesn't feel dramatic yet.</span></div></div>
+        <div class="rest-activity"><div class="rest-icon">🧘</div><div class="rest-text"><strong>Full rest if tired</strong><span>Completely fine to just do morning mobility and nothing else today.</span></div></div>
+      </div>
+    </div>
+
+    <div class="day-section-label">Friday · Session</div>
+    <div class="day-card" onclick="toggleDay(this)">
+      <div class="day-header">
+        <span class="day-pill pill-gym">Session</span>
+        <span class="day-title">Seated Strength A</span>
+        <span class="day-meta">~35 min</span>
+        <svg class="day-chev" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+      </div>
+      <div class="day-body">
+        <div class="info-note">Week 4 Friday. Match or beat Monday's weights. These movements should be starting to feel natural now.</div>
+        <div class="exercise-row"><div class="ex-num">1</div><div class="ex-info"><div class="ex-name">Seated Knee Extension</div><div class="ex-note">Strong and controlled. Quads are noticeably stronger than week 1 — this directly helps the hip.</div></div><div class="ex-sets">3×12 each</div></div>
+        <div class="exercise-row"><div class="ex-num">2</div><div class="ex-info"><div class="ex-name">Seated Band Row</div><div class="ex-note">Really nail the posture this session — tall spine, shoulders back and down throughout the pull.</div></div><div class="ex-sets">3×12</div></div>
+        <div class="exercise-row"><div class="ex-num">3</div><div class="ex-info"><div class="ex-name">Seated Dumbbell Curl</div><div class="ex-note">Heaviest so far. Last 2 reps should genuinely challenge you.</div></div><div class="ex-sets">3×12</div></div>
+        <div class="exercise-row"><div class="ex-num">4</div><div class="ex-info"><div class="ex-name">Seated Hip Abduction (Band)</div><div class="ex-note">Strong outer hip. This exercise is doing more for your hip pain than almost anything else here.</div></div><div class="ex-sets">3×15</div></div>
+        <div class="exercise-row"><div class="ex-num">5</div><div class="ex-info"><div class="ex-name">Seated Chest Press (Dumbbells)</div><div class="ex-note">Good effort. Slow return.</div></div><div class="ex-sets">3×12</div></div>
+        <div class="exercise-row"><div class="ex-num">6</div><div class="ex-info"><div class="ex-name">Seated Knee Raise (Core)</div><div class="ex-note">Core is building quietly. Finish strong.</div></div><div class="ex-sets">3×10</div></div>
+        <div class="warm-note">Four weeks done. Take your measurements this weekend — waist, hips, upper arms. Compare to week 1.</div>
+      </div>
+    </div>
+
+    <div class="day-section-label">Saturday · Rest</div>
+    <div class="day-card" onclick="toggleDay(this)">
+      <div class="day-header"><span class="day-pill pill-rest">Rest</span><span class="day-title">Weekend Recovery</span><span class="day-meta">Light only</span><svg class="day-chev" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg></div>
+      <div class="day-body">
+        <div class="rest-activity"><div class="rest-icon">📏</div><div class="rest-text"><strong>Week 4 measurements</strong><span>Waist, hips, upper arms. Write them down and compare to week 1. Something will have changed.</span></div></div>
+        <div class="rest-activity"><div class="rest-icon">🪑</div><div class="rest-text"><strong>Pedal exerciser or short walk</strong><span>Optional and easy only.</span></div></div>
+      </div>
+    </div>
+
+    <div class="day-section-label">Sunday · Rest</div>
+    <div class="day-card" onclick="toggleDay(this)">
+      <div class="day-header"><span class="day-pill pill-rest">Rest</span><span class="day-title">Full Rest</span><span class="day-meta">Recover</span><svg class="day-chev" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg></div>
+      <div class="day-body">
+        <div class="rest-activity"><div class="rest-icon">🧘</div><div class="rest-text"><strong>Morning mobility + rest</strong><span>Joint circles, hip stretch. Nothing more required today.</span></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- HOME WEEKS 5–6 -->
+  <div class="home-week-content" id="home-week-2">
+    <div class="week-header"><div class="week-badge">Phase 3 · Weeks 5–6</div><div class="week-phase">Stronger Every Week</div></div>
+    <div class="week-desc">3×10 with heavier resistance — last 2 reps of each set should be a real effort. New standing exercises introduced where the hip and ankle allow. Rest 90 seconds between sets.</div>
+
+    <div class="day-section-label">Monday · Session</div>
+    <div class="day-card" onclick="toggleDay(this)">
+      <div class="day-header">
+        <span class="day-pill pill-gym">Session</span>
+        <span class="day-title">Strength A — Heavier</span>
+        <span class="day-meta">~40 min</span>
+        <svg class="day-chev" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+      </div>
+      <div class="day-body">
+        <div class="info-note">3×10, heavier than phase 2. Rest 90 seconds between sets. The last rep of each set should feel genuinely hard — but never painful.</div>
+        <div class="exercise-row"><div class="ex-num">1</div><div class="ex-info"><div class="ex-name">Seated Knee Extension with Band</div><div class="ex-note">Loop a band around the chair leg and your ankle. Now the extension works against resistance — much harder. Go slow.</div></div><div class="ex-sets">3×10 each</div></div>
+        <div class="exercise-row"><div class="ex-num">2</div><div class="ex-info"><div class="ex-name">Seated Band Row</div><div class="ex-note">Heaviest band yet or furthest back position. Hold the squeeze 2 seconds every rep.</div></div><div class="ex-sets">3×10</div></div>
+        <div class="exercise-row"><div class="ex-num">3</div><div class="ex-info"><div class="ex-name">Seated Dumbbell Curl</div><div class="ex-note">Heaviest manageable. Slow — 2 up, 4 down. The slow lowering builds as much muscle as the lift.</div></div><div class="ex-sets">3×10</div></div>
+        <div class="exercise-row"><div class="ex-num">4</div><div class="ex-info"><div class="ex-name">Seated Hip Abduction (Band)</div><div class="ex-note">Heaviest band. 3 second hold each rep. This should feel like real effort now.</div></div><div class="ex-sets">3×15</div></div>
+        <div class="exercise-row"><div class="ex-num">5</div><div class="ex-info"><div class="ex-name">Seated Chest Press (Dumbbells)</div><div class="ex-note">Heaviest yet. Wrists stay neutral. Slow 3-second return.</div></div><div class="ex-sets">3×10</div></div>
+        <div class="exercise-row"><div class="ex-num">6</div><div class="ex-info"><div class="ex-name">Seated Oblique Twist</div><div class="ex-note">Upgrade. Sit tall, hold a light dumbbell or nothing, rotate torso left then right slowly. Rotate from the waist, not just the arms.</div></div><div class="ex-sets">3×16</div></div>
+      </div>
+    </div>
+
+    <div class="day-section-label">Tuesday · Rest</div>
+    <div class="day-card" onclick="toggleDay(this)">
+      <div class="day-header"><span class="day-pill pill-rest">Rest</span><span class="day-title">Active Recovery</span><span class="day-meta">25 min</span><svg class="day-chev" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg></div>
+      <div class="day-body">
+        <div class="rest-activity"><div class="rest-icon">🪑</div><div class="rest-text"><strong>Pedal exerciser</strong><span>25 min. Try gentle intervals if feeling good — 2 min slightly faster, 3 min easy, repeat.</span></div></div>
+        <div class="rest-activity"><div class="rest-icon">🧘</div><div class="rest-text"><strong>Hip and ankle mobility</strong><span>Figure-of-4 hip stretch both sides (30 seconds each). Seated ankle circles 10 each direction. These two habits are directly reducing stiffness over time.</span></div></div>
+      </div>
+    </div>
+
+    <div class="day-section-label">Wednesday · Session</div>
+    <div class="day-card" onclick="toggleDay(this)">
+      <div class="day-header">
+        <span class="day-pill pill-gym">Session</span>
+        <span class="day-title">Strength B — Heavier</span>
+        <span class="day-meta">~40 min</span>
+        <svg class="day-chev" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+      </div>
+      <div class="day-body">
+        <div class="info-note">Session B heavier. A new standing exercise added — only if the hip and ankle feel okay. Always have your hand on the chair.</div>
+        <div class="exercise-row"><div class="ex-num">1</div><div class="ex-info"><div class="ex-name">Seated Band Pull-Apart</div><div class="ex-note">Heaviest band. Hold the stretched position 3 seconds. Upper back and posture improvements are real by now.</div></div><div class="ex-sets">3×15</div></div>
+        <div class="exercise-row"><div class="ex-num">2</div><div class="ex-info"><div class="ex-name">Chair-Supported Hip Hinge with Dumbbells</div><div class="ex-note">Heavier dumbbells than phase 2. Hinge from hips, flat back, squeeze glutes to stand back up. Strong and controlled.</div></div><div class="ex-sets">3×12</div></div>
+        <div class="exercise-row"><div class="ex-num">3</div><div class="ex-info"><div class="ex-name">Chair-Supported Mini Squat</div><div class="ex-note">New — only if hip allows. Stand in front of chair, hands on back. Lower just 3–4 inches (quarter squat), then stand. No deep bend. Stop if hip or ankle protests. This is the foundation for future strength.</div></div><div class="ex-sets">2×10</div></div>
+        <div class="exercise-row"><div class="ex-num">4</div><div class="ex-info"><div class="ex-name">Chair-Supported Side Step (with Band)</div><div class="ex-note">Add a light band just above the knees. Step sideways against the resistance. Harder than phase 2. Great for hip stability.</div></div><div class="ex-sets">3×10 each way</div></div>
+        <div class="exercise-row"><div class="ex-num">5</div><div class="ex-info"><div class="ex-name">Seated Overhead Press (Dumbbells)</div><div class="ex-note">If wrists allow. Heavier. Press and hold 1 second at top before lowering.</div></div><div class="ex-sets">3×10</div></div>
+        <div class="exercise-row"><div class="ex-num">6</div><div class="ex-info"><div class="ex-name">Seated Oblique Twist</div><div class="ex-note">Core is genuinely improving. Slow and deliberate.</div></div><div class="ex-sets">3×16</div></div>
+      </div>
+    </div>
+
+    <div class="day-section-label">Thursday · Rest</div>
+    <div class="day-card" onclick="toggleDay(this)">
+      <div class="day-header"><span class="day-pill pill-rest">Rest</span><span class="day-title">Active Recovery</span><span class="day-meta">25 min</span><svg class="day-chev" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg></div>
+      <div class="day-body">
+        <div class="rest-activity"><div class="rest-icon">🪑</div><div class="rest-text"><strong>Pedal exerciser</strong><span>25 min, moderate pace. Cardiovascular fitness is building steadily.</span></div></div>
+        <div class="rest-activity"><div class="rest-icon">🧘</div><div class="rest-text"><strong>Hip mobility + rest</strong><span>Stretching priority today — especially the figure-of-4 and a gentle seated hamstring stretch (extend leg, reach toward foot only as far as comfortable).</span></div></div>
+      </div>
+    </div>
+
+    <div class="day-section-label">Friday · Session</div>
+    <div class="day-card" onclick="toggleDay(this)">
+      <div class="day-header">
+        <span class="day-pill pill-gym">Session</span>
+        <span class="day-title">Strength A — Finish Strong</span>
+        <span class="day-meta">~40 min</span>
+        <svg class="day-chev" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+      </div>
+      <div class="day-body">
+        <div class="info-note">Week 6, final session of this phase. Push a little harder than Monday where joints allow. You're stronger than you think.</div>
+        <div class="exercise-row"><div class="ex-num">1</div><div class="ex-info"><div class="ex-name">Seated Knee Extension with Band</div><div class="ex-note">Strong quads. Hold 4 seconds at top of each rep.</div></div><div class="ex-sets">3×10 each</div></div>
+        <div class="exercise-row"><div class="ex-num">2</div><div class="ex-info"><div class="ex-name">Seated Band Row</div><div class="ex-note">Best effort. Back and posture are genuinely different to week 1.</div></div><div class="ex-sets">3×10</div></div>
+        <div class="exercise-row"><div class="ex-num">3</div><div class="ex-info"><div class="ex-name">Seated Dumbbell Curl</div><div class="ex-note">Heaviest to date. Controlled through the full range.</div></div><div class="ex-sets">3×10</div></div>
+        <div class="exercise-row"><div class="ex-num">4</div><div class="ex-info"><div class="ex-name">Seated Hip Abduction (Band)</div><div class="ex-note">Strong outer hip. This has done more for your hip pain than almost anything else.</div></div><div class="ex-sets">3×15</div></div>
+        <div class="exercise-row"><div class="ex-num">5</div><div class="ex-info"><div class="ex-name">Seated Chest Press (Dumbbells)</div><div class="ex-note">Heaviest yet. Slow and strong.</div></div><div class="ex-sets">3×10</div></div>
+        <div class="exercise-row"><div class="ex-num">6</div><div class="ex-info"><div class="ex-name">Seated Oblique Twist</div><div class="ex-note">Core has come a long way. Finish with control and pride.</div></div><div class="ex-sets">3×20</div></div>
+        <div class="warm-note">6 weeks done. Take measurements this weekend. Notice how stairs and standing feel compared to week 1 — that's the hip getting stronger.</div>
+      </div>
+    </div>
+
+    <div class="day-section-label">Saturday · Rest</div>
+    <div class="day-card" onclick="toggleDay(this)">
+      <div class="day-header"><span class="day-pill pill-rest">Rest</span><span class="day-title">Weekend Recovery</span><span class="day-meta">Easy</span><svg class="day-chev" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg></div>
+      <div class="day-body">
+        <div class="rest-activity"><div class="rest-icon">📏</div><div class="rest-text"><strong>Week 6 measurements</strong><span>Waist, hips, upper arms. Compare to week 1 and week 4.</span></div></div>
+        <div class="rest-activity"><div class="rest-icon">🪑</div><div class="rest-text"><strong>Pedal exerciser or short walk</strong><span>Optional. Easy pace only.</span></div></div>
+      </div>
+    </div>
+
+    <div class="day-section-label">Sunday · Rest</div>
+    <div class="day-card" onclick="toggleDay(this)">
+      <div class="day-header"><span class="day-pill pill-rest">Rest</span><span class="day-title">Full Rest</span><span class="day-meta">Recover</span><svg class="day-chev" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg></div>
+      <div class="day-body">
+        <div class="rest-activity"><div class="rest-icon">🧘</div><div class="rest-text"><strong>Rest and prepare</strong><span>Two weeks left. Think about what feels different to week 1 — getting up from the chair, stairs, energy. Those are real wins.</span></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- HOME WEEKS 7–8 -->
+  <div class="home-week-content" id="home-week-3">
+    <div class="week-header"><div class="week-badge">Phase 4 · Weeks 7–8</div><div class="week-phase">Your Strongest Yet</div></div>
+    <div class="week-desc">3×8 with the heaviest weights yet. 2–3 min rest between sets. These sessions will show you how far you've actually come. The movements that were hard in week 1 will feel like warm-up by now.</div>
+
+    <div class="day-section-label">Monday · Session</div>
+    <div class="day-card" onclick="toggleDay(this)">
+      <div class="day-header">
+        <span class="day-pill pill-gym">Session</span>
+        <span class="day-title">Strength A — Peak</span>
+        <span class="day-meta">~45 min</span>
+        <svg class="day-chev" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+      </div>
+      <div class="day-body">
+        <div class="info-note">3×8, heaviest weights of the programme. Last rep of every set should be a genuine struggle — but form stays perfect. Take the full 2 min rest.</div>
+        <div class="exercise-row"><div class="ex-num">1</div><div class="ex-info"><div class="ex-name">Seated Knee Extension with Band</div><div class="ex-note">Heavier band or hold 5 seconds at top. Quads should be burning by rep 8.</div></div><div class="ex-sets">3×8 each</div></div>
+        <div class="exercise-row"><div class="ex-num">2</div><div class="ex-info"><div class="ex-name">Seated Band Row</div><div class="ex-note">Heaviest resistance of the programme. Hold the squeeze 3 seconds every rep.</div></div><div class="ex-sets">3×8</div></div>
+        <div class="exercise-row"><div class="ex-num">3</div><div class="ex-info"><div class="ex-name">Seated Dumbbell Curl</div><div class="ex-note">Heaviest manageable with good form. 2 seconds up, 4 seconds down. No swinging.</div></div><div class="ex-sets">3×8</div></div>
+        <div class="exercise-row"><div class="ex-num">4</div><div class="ex-info"><div class="ex-name">Seated Hip Abduction (Band)</div><div class="ex-note">Heaviest band, 4 second hold. The outer hip strength you've built is directly protecting the joint.</div></div><div class="ex-sets">3×15</div></div>
+        <div class="exercise-row"><div class="ex-num">5</div><div class="ex-info"><div class="ex-name">Seated Chest Press (Dumbbells)</div><div class="ex-note">Heaviest of the programme. Breathe out on the push. Impressive how far this has come.</div></div><div class="ex-sets">3×8</div></div>
+        <div class="exercise-row"><div class="ex-num">6</div><div class="ex-info"><div class="ex-name">Seated Oblique Twist</div><div class="ex-note">Hold a light dumbbell if this has become easy without weight. Controlled rotation.</div></div><div class="ex-sets">3×20</div></div>
+        <div class="warm-note">Two of the hardest sessions of the whole programme ahead. You've built the strength and habit to handle them.</div>
+      </div>
+    </div>
+
+    <div class="day-section-label">Tuesday · Rest</div>
+    <div class="day-card" onclick="toggleDay(this)">
+      <div class="day-header"><span class="day-pill pill-rest">Rest</span><span class="day-title">Active Recovery</span><span class="day-meta">25–30 min</span><svg class="day-chev" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg></div>
+      <div class="day-body">
+        <div class="rest-activity"><div class="rest-icon">🪑</div><div class="rest-text"><strong>Pedal exerciser</strong><span>25–30 min. You've built real cardiovascular fitness — this feels very different to week 1.</span></div></div>
+        <div class="rest-activity"><div class="rest-icon">🧘</div><div class="rest-text"><strong>Full mobility routine</strong><span>Hip, ankle, wrist, shoulder circles. Figure-of-4 hip stretch 45 seconds each side. Seated hamstring stretch. This is maintenance now — keep it going beyond the 8 weeks.</span></div></div>
+      </div>
+    </div>
+
+    <div class="day-section-label">Wednesday · Session</div>
+    <div class="day-card" onclick="toggleDay(this)">
+      <div class="day-header">
+        <span class="day-pill pill-gym">Session</span>
+        <span class="day-title">Strength B — Peak</span>
+        <span class="day-meta">~45 min</span>
+        <svg class="day-chev" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+      </div>
+      <div class="day-body">
+        <div class="info-note">Heaviest Session B of the programme. Your back, shoulder, and hip strength is at its highest point. Make this count.</div>
+        <div class="exercise-row"><div class="ex-num">1</div><div class="ex-info"><div class="ex-name">Seated Band Pull-Apart</div><div class="ex-note">Heaviest band, 3 second hold. Upper back posture — standing taller than week 1 without thinking about it.</div></div><div class="ex-sets">3×15</div></div>
+        <div class="exercise-row"><div class="ex-num">2</div><div class="ex-info"><div class="ex-name">Chair-Supported Hip Hinge with Dumbbells</div><div class="ex-note">Heaviest dumbbells yet. Hinge, hold at the bottom briefly, squeeze glutes hard on the way up.</div></div><div class="ex-sets">3×10</div></div>
+        <div class="exercise-row"><div class="ex-num">3</div><div class="ex-info"><div class="ex-name">Chair-Supported Mini Squat</div><div class="ex-note">If hip has been tolerating this well, go slightly deeper — 5–6 inches instead of 3–4. Still not a full squat. Always chair support.</div></div><div class="ex-sets">3×10</div></div>
+        <div class="exercise-row"><div class="ex-num">4</div><div class="ex-info"><div class="ex-name">Chair-Supported Side Step (Band)</div><div class="ex-note">Heaviest band. 12 steps each direction. Your hip stability is significantly better than week 1.</div></div><div class="ex-sets">3×12 each way</div></div>
+        <div class="exercise-row"><div class="ex-num">5</div><div class="ex-info"><div class="ex-name">Seated Overhead Press (Dumbbells)</div><div class="ex-note">If wrists allow. Heaviest to date. Press well.</div></div><div class="ex-sets">3×8</div></div>
+        <div class="exercise-row"><div class="ex-num">6</div><div class="ex-info"><div class="ex-name">Seated Oblique Twist</div><div class="ex-note">Strong core. Rotate fully and with control.</div></div><div class="ex-sets">3×20</div></div>
+      </div>
+    </div>
+
+    <div class="day-section-label">Thursday · Rest</div>
+    <div class="day-card" onclick="toggleDay(this)">
+      <div class="day-header"><span class="day-pill pill-rest">Rest</span><span class="day-title">Active Recovery</span><span class="day-meta">Easy</span><svg class="day-chev" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg></div>
+      <div class="day-body">
+        <div class="rest-activity"><div class="rest-icon">🪑</div><div class="rest-text"><strong>Pedal exerciser — easy today</strong><span>20 min, comfortable pace. One more session to go — save some energy for Friday.</span></div></div>
+        <div class="rest-activity"><div class="rest-icon">🧘</div><div class="rest-text"><strong>Rest and stretch</strong><span>Full rest with mobility work is completely appropriate today.</span></div></div>
+      </div>
+    </div>
+
+    <div class="day-section-label">Friday · Final Session</div>
+    <div class="day-card" onclick="toggleDay(this)">
+      <div class="day-header">
+        <span class="day-pill pill-gym">Session</span>
+        <span class="day-title">Strength A — The Last One</span>
+        <span class="day-meta">~45 min</span>
+        <svg class="day-chev" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+      </div>
+      <div class="day-body">
+        <div class="info-note">Final session of the home 8-week programme. Compare what you're lifting now to what you started with in week 1. That difference is real, built strength.</div>
+        <div class="exercise-row"><div class="ex-num">1</div><div class="ex-info"><div class="ex-name">Seated Knee Extension with Band</div><div class="ex-note">Last set. Strong quads — they're protecting your hip and knee every time you stand up now.</div></div><div class="ex-sets">3×8 each</div></div>
+        <div class="exercise-row"><div class="ex-num">2</div><div class="ex-info"><div class="ex-name">Seated Band Row</div><div class="ex-note">Best effort of the programme. Hold the squeeze — you've earned this.</div></div><div class="ex-sets">3×8</div></div>
+        <div class="exercise-row"><div class="ex-num">3</div><div class="ex-info"><div class="ex-name">Seated Dumbbell Curl</div><div class="ex-note">Heaviest manageable. Last set of curls of the programme.</div></div><div class="ex-sets">3×8</div></div>
+        <div class="exercise-row"><div class="ex-num">4</div><div class="ex-info"><div class="ex-name">Seated Hip Abduction (Band)</div><div class="ex-note">Strong outer hip. This one exercise has probably done more for your daily hip pain than anything else here.</div></div><div class="ex-sets">3×15</div></div>
+        <div class="exercise-row"><div class="ex-num">5</div><div class="ex-info"><div class="ex-name">Seated Chest Press (Dumbbells)</div><div class="ex-note">Last chest press of the programme. Make it count.</div></div><div class="ex-sets">3×8</div></div>
+        <div class="exercise-row"><div class="ex-num">6</div><div class="ex-info"><div class="ex-name">Seated Oblique Twist</div><div class="ex-note">Very last exercise of 8 weeks. Sit tall, breathe, finish strong.</div></div><div class="ex-sets">3×20</div></div>
+        <div class="warm-note">🎉 8 weeks complete — from your living room, with a chair and some bands. That is genuinely impressive. Take your final measurements this weekend. When gym access comes, you'll be starting from a place of real strength.</div>
+      </div>
+    </div>
+
+    <div class="day-section-label">Saturday · Rest</div>
+    <div class="day-card" onclick="toggleDay(this)">
+      <div class="day-header"><span class="day-pill pill-rest">Rest</span><span class="day-title">Celebrate</span><span class="day-meta">Well done</span><svg class="day-chev" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg></div>
+      <div class="day-body">
+        <div class="rest-activity"><div class="rest-icon">📏</div><div class="rest-text"><strong>Final measurements</strong><span>Waist, hips, upper arms. Write them next to week 1. Every change is earned.</span></div></div>
+        <div class="rest-activity"><div class="rest-icon">✅</div><div class="rest-text"><strong>What next?</strong><span>Repeat this programme with heavier starting weights, or move to the Gym Plan when access comes. The morning mobility and pedal exerciser habits — keep those going permanently.</span></div></div>
+      </div>
+    </div>
+
+    <div class="day-section-label">Sunday · Rest</div>
+    <div class="day-card" onclick="toggleDay(this)">
+      <div class="day-header"><span class="day-pill pill-rest">Rest</span><span class="day-title">Programme Complete</span><span class="day-meta">Proud of you</span><svg class="day-chev" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg></div>
+      <div class="day-body">
+        <div class="rest-activity"><div class="rest-icon">☕</div><div class="rest-text"><strong>Rest and be proud</strong><span>8 weeks of showing up for yourself — with fibromyalgia, a bad hip, a bad ankle, and without a gym. That took real determination. It matters.</span></div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="top-spacer"></div><div class="top-spacer"></div>
+</div>
+
+<!-- NAVIGATION -->
+<nav>
+  <button class="nav-btn active" onclick="showPage('goals',this)">
+    <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+    Goals
+  </button>
+  <button class="nav-btn" onclick="showPage('understand',this)">
+    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+    Understand
+  </button>
+  <button class="nav-btn" onclick="showPage('home',this)">
+    <svg viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>
+    At Home
+  </button>
+  <button class="nav-btn" onclick="showPage('programme',this)">
+    <svg viewBox="0 0 24 24"><path d="M18 20V10"/><path d="M12 20V4"/><path d="M6 20v-6"/></svg>
+    At Gym
+  </button>
+</nav>
+
+<script>
+  function showPage(id, btn) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('page-' + id).classList.add('active');
+    btn.classList.add('active');
+    window.scrollTo(0, 0);
+  }
+  function toggleExplain(el) {
+    const wasOpen = el.classList.contains('open');
+    document.querySelectorAll('.explain-item').forEach(i => i.classList.remove('open'));
+    if (!wasOpen) el.classList.add('open');
+  }
+  function toggleDay(el) {
+    el.classList.toggle('open');
+  }
+  function switchWeek(idx, btn) {
+    document.querySelectorAll('.week-tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.week-content').forEach(c => c.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('week-' + idx).classList.add('active');
+    window.scrollTo(0, 0);
+  }
+  function switchHomeWeek(idx, btn) {
+    document.querySelectorAll('.home-week-tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.home-week-content').forEach(c => c.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('home-week-' + idx).classList.add('active');
+    window.scrollTo(0, 0);
+  }
+</script>
+</body>
+</html>
